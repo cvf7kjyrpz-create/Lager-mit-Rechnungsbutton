@@ -89,6 +89,7 @@
         .btn-mini-icon { background: none; border: 1px solid #333; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; margin-left: 3px; font-size: 0.75rem; color: #888; }
         .btn-mini-icon:hover { background: #333; color: #fff; }
         .btn-del-icon { color: #d66; border-color: #522; }
+        .btn-copy-icon { color: #3b82f6; border-color: #1e3a8a; }
 
         /* FAB */
         .fab { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: #fff; width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; padding-bottom: 4px;}
@@ -112,7 +113,7 @@
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-copy { background: #444; color: #fff; border: 1px solid #555; }
         
-        /* SETTINGS COSMETICS */
+        /* SETTINGS */
         .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
         .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.5px; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; }
@@ -552,14 +553,18 @@
                             <span style="color:#eee;">SUM: ${g.total.toFixed(2)} €</span>
                             <span class="${profitClass}" style="font-size:0.65rem;">${profit >= 0 ? '+' : ''}${profit.toFixed(2)} €</span>
                         </div>
-                        <button class="btn-mini-icon btn-del-icon" title="Rechnung löschen" onclick="openDeleteChoice('${inv}')">🗑️</button>
+                        <div style="display:flex;">
+                             <button class="btn-mini-icon btn-copy-icon" title="Daten kopieren" onclick="copySaleFromHistory('${inv}')">📋</button>
+                            <button class="btn-mini-icon btn-del-icon" title="Rechnung löschen" onclick="openDeleteChoice('${inv}')">🗑️</button>
+                        </div>
                     </div>`;
                 list.appendChild(div);
             });
         }
 
-        // --- COPY LOGIC (NEU) ---
+        // --- COPY LOGIC (NEU: AUCH FÜR HISTORIE) ---
         function copyInvoiceData() {
+            // Dies kopiert aus dem "Verkaufen" Fenster
             const data = {
                 invoiceNr: document.getElementById('sellInvoiceNr').value,
                 date: document.getElementById('sellDate').value,
@@ -574,10 +579,49 @@
                     priceTotal: b.priceTotal
                 }))
             };
+            doCopy(data);
+        }
+
+        function copySaleFromHistory(invNr) {
+            // Dies sucht die Daten aus der Datenbank/Array
+            const relatedSales = salesLog.filter(s => s.invoiceNr === invNr);
+            if(relatedSales.length === 0) return;
+
+            const first = relatedSales[0];
+            // Wir müssen die Summen wieder zusammenrechnen, da sie in salesLog pro item gespeichert sind,
+            // aber fees und shipping meist nur beim ersten item stehen.
+            let shipSum = 0;
+            let feeSum = 0;
+            let totalSum = 0;
             
+            const items = relatedSales.map(s => {
+                shipSum += (s.shipping || 0);
+                feeSum += (s.fees || 0);
+                totalSum += (s.total || 0);
+                return {
+                    name: s.name,
+                    artnr: s.artnr,
+                    qty: s.qty,
+                    priceTotal: s.total - (s.shipping || 0) // Preis des Items ohne Versand
+                };
+            });
+
+            const data = {
+                invoiceNr: first.invoiceNr,
+                date: first.date,
+                platform: first.platform,
+                shipping: shipSum,
+                fees: feeSum,
+                total: totalSum.toFixed(2) + " €",
+                items: items
+            };
+            doCopy(data);
+        }
+
+        function doCopy(data) {
             const json = JSON.stringify(data);
             navigator.clipboard.writeText(json).then(() => {
-                alert("Daten kopiert!\nJetzt in Rechnungshof App einfügen.");
+                alert("Rechnungs-Daten kopiert!\n\nÖffne jetzt die Rechnungshof App und drücke 'Einfügen'.");
             }).catch(err => {
                 alert("Fehler beim Kopieren: " + err);
             });
