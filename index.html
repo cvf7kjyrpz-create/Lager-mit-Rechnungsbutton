@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V68</title>
+    <title>LagerManager V69</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -47,11 +47,10 @@
         #viewInventory, #viewSales { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
         #viewInventory.active, #viewSales.active { display: block; }
 
-        /* INVENTORY LIST - SUPER TINY */
+        /* INVENTORY LIST */
         .list-row { display: grid; grid-template-columns: 22px 1fr auto; padding: 3px 5px; border-bottom: 1px solid #2a2a2a; align-items: center; background: var(--bg); cursor: pointer; gap: 5px; }
         .list-row:hover { background: #222; }
         .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.6rem; border: 1px solid #333; border-radius: 3px; height: 14px; line-height: 14px; background: #151515; }
-        
         .item-info { display: flex; flex-direction: column; gap: 0px; overflow: hidden; min-width: 0; }
         .item-name { font-weight: 600; color: #ddd; font-size: 0.55rem; line-height: 1.1; word-wrap: break-word; white-space: normal; }
         .meta-line { font-size: 0.5rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; margin-top: 1px;}
@@ -59,31 +58,16 @@
         .icon-badge { font-size: 0.55rem; opacity: 0.7; }
         .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 2px 4px; font-size: 0.55rem; cursor: pointer; border-radius: 3px; }
 
-        /* SALES LIST - COMPACT & WHITE LINE */
-        .sale-card { 
-            margin-bottom: 8px; 
-            background: var(--bg); 
-            border-bottom: 1px solid #ffffff; 
-            padding-bottom: 2px;
-        }
-        
+        /* SALES LIST */
+        .sale-card { margin-bottom: 8px; background: var(--bg); border-bottom: 1px solid #ffffff; padding-bottom: 2px; }
         .sale-header { padding: 3px 6px; background: #222; display: flex; justify-content: space-between; font-size: 0.6rem; color: #ccc; font-weight: bold; }
         .sale-body { padding: 0; }
-        
-        .sale-item-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 4px 6px; border-bottom: 1px solid #252525; 
-            color: #ddd; font-size: 0.65rem; 
-        }
-        
+        .sale-item-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; border-bottom: 1px solid #252525; color: #ddd; font-size: 0.65rem; }
         .item-details-block { flex: 1; margin-right: 6px; display:flex; align-items:center; justify-content: space-between; overflow:hidden;}
         .item-left { display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-        
         .item-left-name { font-weight:bold; font-size:0.7rem; }
         .item-left-meta { font-size:0.55rem; color:#888; }
-
         .item-tools { display: flex; gap: 4px; margin-left:6px; flex-shrink:0; }
-
         .sale-footer { padding: 3px 6px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem;}
         
         .mini-btn { border: 1px solid #333; background: #222; width: 22px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
@@ -113,7 +97,7 @@
         .btn-secondary { background: #333; color: #ccc; }
         .btn-danger { background: var(--danger); color: #fff; }
 
-        /* SETTINGS */
+        /* SETTINGS & REST */
         .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
         .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
@@ -137,7 +121,6 @@
         
         .delete-choice-btn { text-align: center; padding: 12px; background: #333; border: 1px solid #444; cursor: pointer; border-radius: 6px; }
         .del-title { display: block; font-weight: bold; font-size: 0.85rem; color: #eee; margin-bottom: 4px; }
-        
         #searchDropdown { display: none; background: #222; border: 1px solid #444; margin-top: 2px; max-height: 200px; overflow-y: auto; position: absolute; width: 100%; z-index: 50; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .search-res { padding: 10px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.8rem; }
         .basket-item { background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 6px; border-radius: 6px; }
@@ -147,7 +130,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V68</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V69</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -537,13 +520,11 @@
         function viewSaleImage(saleId) {
             const s = salesLog.find(x => x.id === saleId);
             if(!s) return;
-            // 1. Priorität: Bild im Sales-Record (neuere Verkäufe)
             if(s.img) {
                 document.getElementById('fullImage').src = s.img;
                 document.getElementById('modalImageViewer').style.display = 'flex';
                 return;
             }
-            // 2. Priorität: Bild im Inventar suchen (alte Verkäufe)
             const item = inventory.find(x => x.artnr === s.artnr);
             if(item && item.bild) {
                 document.getElementById('fullImage').src = item.bild;
@@ -557,12 +538,19 @@
             const s = salesLog.find(x => x.id === id);
             const allItems = salesLog.filter(x => x.invoiceNr === s.invoiceNr);
             
+            // Versandkosten summieren (falls auf mehrere Artikel verteilt oder einzeln)
+            const totalShipping = allItems.reduce((sum, item) => sum + (item.shipping || 0), 0);
+            
             const itemsPayload = allItems.map(it => ({
                 name: it.name, artnr: it.artnr, qty: it.qty, priceTotal: it.total.toFixed(2)
             }));
 
             const data = {
-                invoiceNr: s.invoiceNr, date: s.date, platform: s.platform, items: itemsPayload
+                invoiceNr: s.invoiceNr, 
+                date: s.date, 
+                platform: s.platform, 
+                shipping: totalShipping, // WICHTIG: Versand wird jetzt übergeben!
+                items: itemsPayload
             };
             
             navigator.clipboard.writeText(JSON.stringify(data)).then(()=>{
@@ -845,7 +833,6 @@
 
         // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
         function exportCSV() {
-            // Header
             let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
 
             salesLog.forEach(s => {
@@ -855,8 +842,6 @@
                 const ship = s.shipping || 0;
                 const fees = s.fees || 0;
                 const profit = revenue - ship - fees - totalBuy;
-
-                // Formatierung: 12.50 -> "12,50" für deutsches Excel
                 const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
 
                 let row = [
@@ -864,7 +849,7 @@
                     s.platform,
                     formatDate(s.date), 
                     s.qty,
-                    `"${s.name.replace(/"/g, '""')}"`, // Anführungszeichen im Namen escapen
+                    `"${s.name.replace(/"/g, '""')}"`, 
                     fmt(buyPrice),
                     fmt(revenue),
                     fmt(ship),
@@ -875,7 +860,6 @@
                 csvContent += row + "\n";
             });
 
-            // BOM für UTF-8 (wichtig für Excel/Numbers)
             const bom = "\uFEFF";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
