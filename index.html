@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V67</title>
+    <title>LagerManager V68</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -63,7 +63,7 @@
         .sale-card { 
             margin-bottom: 8px; 
             background: var(--bg); 
-            border-bottom: 1px solid #ffffff; /* Weisse Trennlinie */
+            border-bottom: 1px solid #ffffff; 
             padding-bottom: 2px;
         }
         
@@ -147,7 +147,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V67</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V68</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -821,12 +821,66 @@
         }
 
         function printInventory() {
-            let h = `<html><head><title>Inventur</title><style>body{font-family:sans-serif}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left}</style></head><body><h2>Inventurliste</h2><table><tr><th>Art-Nr</th><th>Name</th><th>Menge</th><th>Ort</th></tr>`;
+            let h = `<html><head><title>Inventur</title><style>
+                body{font-family:sans-serif}
+                table{width:100%;border-collapse:collapse;font-size:12px}
+                th,td{border:1px solid #ccc;padding:6px;text-align:left}
+            </style></head><body>
+            <h2>Inventurliste (${new Date().toLocaleDateString()})</h2>
+            <table>
+            <tr><th>Art-Nr</th><th>Name</th><th>Größe</th><th>Menge</th><th>Ort</th></tr>`;
+
             inventory.sort((a,b)=> (a.artnr||'').localeCompare(b.artnr||'')).forEach(i=>{
-                h += `<tr><td>${i.artnr}</td><td>${i.name}</td><td>${i.menge}</td><td>${i.loc||''}</td></tr>`;
+                h += `<tr>
+                    <td>${i.artnr || ''}</td>
+                    <td>${i.name}</td>
+                    <td>${i.groesse || ''}</td>
+                    <td>${i.menge}</td>
+                    <td>${i.ort || i.loc || ''}</td>
+                </tr>`;
             });
             h += `</table><script>window.print()<\/script></body></html>`;
             const w = window.open('','_blank'); w.document.write(h); w.document.close();
+        }
+
+        // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
+        function exportCSV() {
+            // Header
+            let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
+
+            salesLog.forEach(s => {
+                const buyPrice = s.buyPrice || 0;
+                const totalBuy = buyPrice * (s.qty || 1);
+                const revenue = s.total || 0;
+                const ship = s.shipping || 0;
+                const fees = s.fees || 0;
+                const profit = revenue - ship - fees - totalBuy;
+
+                // Formatierung: 12.50 -> "12,50" für deutsches Excel
+                const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
+
+                let row = [
+                    s.invoiceNr,
+                    s.platform,
+                    formatDate(s.date), 
+                    s.qty,
+                    `"${s.name.replace(/"/g, '""')}"`, // Anführungszeichen im Namen escapen
+                    fmt(buyPrice),
+                    fmt(revenue),
+                    fmt(ship),
+                    fmt(fees),
+                    fmt(profit)
+                ].join(';');
+
+                csvContent += row + "\n";
+            });
+
+            // BOM für UTF-8 (wichtig für Excel/Numbers)
+            const bom = "\uFEFF";
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`; 
+            a.click();
         }
 
         function formatDate(d) { return d ? d.split('-').reverse().join('.') : ''; }
@@ -860,47 +914,6 @@
             const r = new FileReader(); r.onload = async e => {
                 try { const d = JSON.parse(e.target.result); await dbOp('inventory', 'clear'); await dbOp('sales', 'clear'); for(let i of d.artikel||[]) { delete i.id; await dbOp('inventory', 'add', i); } for(let s of d.sales||[]) { delete s.id; await dbOp('sales', 'add', s); } location.reload(); } catch(err) { alert(err); }
             }; r.readAsText(inp.files[0]);
-        }
-        
-        // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
-        function exportCSV() {
-            let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
-
-            salesLog.forEach(s => {
-                // Calculations
-                const buyPrice = s.buyPrice || 0;
-                const totalBuy = buyPrice * (s.qty || 1);
-                const revenue = s.total || 0;
-                const ship = s.shipping || 0;
-                const fees = s.fees || 0;
-                const profit = revenue - ship - fees - totalBuy;
-
-                // Format Helper (12.50 -> "12,50")
-                const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
-
-                // Build Row
-                let row = [
-                    s.invoiceNr,
-                    s.platform,
-                    formatDate(s.date), 
-                    s.qty,
-                    `"${s.name.replace(/"/g, '""')}"`, // Quotes inside name handled
-                    fmt(buyPrice),
-                    fmt(revenue),
-                    fmt(ship),
-                    fmt(fees),
-                    fmt(profit)
-                ].join(';');
-
-                csvContent += row + "\n";
-            });
-
-            // BOM for Excel compatibility
-            const bom = "\uFEFF";
-            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`; 
-            a.click();
         }
 
         initDB().then(loadData);
