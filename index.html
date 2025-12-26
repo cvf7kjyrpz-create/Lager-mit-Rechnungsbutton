@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V60</title>
+    <title>LagerManager V61</title>
     <style>
         :root {
             --bg: #1e1e1e; 
@@ -36,12 +36,13 @@
         .nav-tab { flex: 1; background: transparent; border: none; padding: 10px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
         .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); color: #fff; }
 
-        /* TOOLBAR & STATS */
+        /* TOOLBAR */
         .toolbar { padding: 6px 8px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
         .search-wrapper { position: relative; width: 100%; }
         .search-input { width: 100%; height: 32px; background: #111; border: 1px solid var(--border); border-radius: 6px; padding: 0 30px 0 8px; color: #ccc; box-sizing: border-box; font-size: 0.85rem; }
         .search-clear { position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: none; border: none; color: #777; cursor: pointer; display: none; }
 
+        /* STATS */
         .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
         .stat-item { background: var(--panel); padding: 4px; text-align: center; }
         .stat-lbl { font-size: 0.5rem; color: #777; text-transform: uppercase; display: block; margin-bottom: 1px; }
@@ -52,23 +53,27 @@
         #viewInventory, #viewSales { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
         #viewInventory.active, #viewSales.active { display: block; }
 
-        /* INVENTORY LIST - KOMPAKTER */
-        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 6px 8px; border-bottom: 1px solid #2a2a2a; align-items: center; background: var(--bg); cursor: pointer; gap: 8px; }
+        /* INVENTORY LIST */
+        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 8px; border-bottom: 1px solid #2a2a2a; align-items: flex-start; background: var(--bg); cursor: pointer; gap: 8px; }
         .list-row:hover { background: #222; }
-        .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.75rem; border: 1px solid #333; border-radius: 4px; height: 20px; line-height: 20px; background: #151515; }
-        .item-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; min-width: 0; }
+        .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.75rem; border: 1px solid #333; border-radius: 4px; height: 20px; line-height: 20px; background: #151515; margin-top: 2px;}
         
-        /* SCHRIFTART HIER KLEINER GEMACHT */
-        .item-name { font-weight: 600; color: #eee; font-size: 0.75rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-size-badge { color: #fbbf24; font-weight: bold; margin-left: 4px; font-size: 0.75rem; }
+        .item-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
         
-        .meta-line { font-size: 0.65rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 3px 6px; font-size: 0.65rem; cursor: pointer; border-radius: 3px; }
+        /* FIX: Name bricht um (nicht abgeschnitten) */
+        .item-name { font-weight: 600; color: #eee; font-size: 0.8rem; line-height: 1.25; word-wrap: break-word; white-space: normal; }
+        
+        /* FIX: Größe neben Artikelnummer */
+        .meta-line { font-size: 0.7rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;}
+        .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 3px; border-radius: 3px; font-size: 0.65rem; }
+
+        .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 4px 8px; font-size: 0.65rem; cursor: pointer; border-radius: 3px; }
 
         /* SALES LIST */
         .sale-card { margin-bottom: 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
         .sale-header { padding: 6px 10px; background: #222; display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; font-weight: bold; }
-        .sale-body { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #252525; }
+        .sale-body { padding: 8px 10px; border-bottom: 1px solid #252525; }
+        .sale-item-row { display: flex; justify-content: space-between; color: #ddd; padding: 3px 0; font-size: 0.8rem; }
         .sale-footer { padding: 6px 10px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
         .sale-actions { display: flex; gap: 12px; }
         .icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0 4px; opacity: 0.8; transition: 0.2s; }
@@ -81,30 +86,23 @@
         .modal-box { background: var(--panel); width: 100%; max-width: 450px; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; max-height: 90vh; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
         .modal-header { padding: 12px; background: #222; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 0.9rem; color: #eee; }
         .modal-body { padding: 15px; overflow-y: auto; }
-        
-        /* FOOTER MIT 3 BUTTONS NEBENEINANDER */
         .modal-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: #222; }
 
-        /* INPUTS & GRID */
+        /* INPUTS */
         .form-grid { display: grid; gap: 12px; }
-        /* Hier mehr Platz schaffen */
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        
         label { display: block; font-size: 0.65rem; color: #888; margin-bottom: 3px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         input, select, textarea { width: 100%; height: 38px; background: #111; border: 1px solid #444; color: #ddd; padding: 0 8px; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
         textarea { height: 70px; padding: 8px; }
 
-        /* BUTTONS */
         .btn { border: none; padding: 10px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; border-radius: 6px; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;}
         .btn-primary { background: var(--primary); color: #fff; }
         .btn-secondary { background: #333; color: #ccc; }
         .btn-danger { background: var(--danger); color: #fff; }
 
-        /* OPTIONS / SETTINGS */
+        /* SETTINGS */
         .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
         .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
-        
-        /* SWITCH */
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
         .switch-label { font-size: 0.85rem; color: #ddd; }
         .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
@@ -113,7 +111,6 @@
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); border-color: var(--success); }
         input:checked + .slider:before { transform: translateX(18px); }
-
         .action-list { display: flex; flex-direction: column; gap: 8px; }
         .action-btn { display: flex; align-items: center; justify-content: space-between; background: #222; border: 1px solid #333; padding: 12px; border-radius: 6px; color: #ddd; cursor: pointer; font-size: 0.85rem; text-decoration: none; }
         .action-btn:active { background: #333; }
@@ -137,7 +134,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V60</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V61</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -294,7 +291,6 @@
         <div class="modal-box" style="height:auto;">
             <div class="modal-header">Optionen</div>
             <div class="modal-body">
-                
                 <div class="settings-group">
                     <div class="settings-title">Sicherheit</div>
                     <div class="switch-row">
@@ -389,7 +385,7 @@
             salesLog = await dbOp('sales', 'getAll');
             renderCurrentView();
             updateStats();
-            // Load Auto Backup Setting
+            // Load Settings
             const saved = localStorage.getItem('lagerAutoBackup');
             if(saved === 'true') {
                 autoBackupMode = true;
@@ -451,14 +447,14 @@
                 div.className = 'list-row';
                 div.onclick = (e) => { if(e.target.tagName !== 'BUTTON') openEditModal(i.id); };
                 const art = i.artnr || '';
-                // SIZE IN LISTE
-                const sizeStr = i.groesse ? `<span class="item-size-badge">[Gr: ${i.groesse}]</span>` : '';
+                // FIX: Größe unten neben Art-Nr
+                const sizeStr = i.groesse ? `<span class="size-badge">Gr: ${i.groesse}</span>` : '';
                 
                 div.innerHTML = `
                     <div class="qty-box">${i.menge}</div>
                     <div class="item-info">
-                        <span class="item-name">${i.name}${sizeStr}</span>
-                        <span class="meta-line">${art} | ${i.loc || '-'}</span>
+                        <span class="item-name">${i.name}</span>
+                        <span class="meta-line">${art} ${sizeStr} <span style="margin-left:auto;">${i.loc || ''}</span></span>
                     </div>
                     <div class="item-actions">
                         <span class="price-tag">${(i.preis||0).toFixed(2)} €</span>
@@ -475,6 +471,7 @@
             const groups = {};
             salesLog.forEach(s => {
                 if(term && !s.name.toLowerCase().includes(term) && !s.invoiceNr.toLowerCase().includes(term)) return;
+                // Init Gruppe
                 if (!groups[s.invoiceNr]) groups[s.invoiceNr] = { items: [], total: 0, date: s.date, platform: s.platform, id: s.id };
                 groups[s.invoiceNr].items.push(s);
                 groups[s.invoiceNr].total += (s.total || 0);
@@ -491,7 +488,7 @@
                     const buy = (it.buyPrice || 0) * (it.qty || 1);
                     const prof = (it.total||0) - (it.shipping||0) - (it.fees||0) - buy;
                     totalProfit += prof;
-                    return `<div style="display:flex; justify-content:space-between; color:#ddd; padding:4px 0;">
+                    return `<div class="sale-item-row">
                             <span>${it.name} (${it.qty}x)</span>
                             <span>${it.total.toFixed(2)} €</span>
                         </div>`;
@@ -503,13 +500,13 @@
                 div.className = 'sale-card';
                 div.innerHTML = `
                     <div class="sale-header"><span>${inv} (${g.platform})</span><span>${formatDate(g.date)}</span></div>
-                    <div style="padding:10px 12px; border-bottom:1px solid #252525;">${bodyHtml}</div>
+                    <div class="sale-body" style="display:block;">${bodyHtml}</div>
                     <div class="sale-footer">
                         <div style="font-weight:bold; color:${profClass}">Gw: ${totalProfit.toFixed(2)} €</div>
                         <div class="sale-actions">
                             <button class="icon-btn" style="color:#3b82f6" title="Kopieren" onclick="copySale(${firstId})">📋</button>
                             <button class="icon-btn" style="color:#fbbf24" title="Bearbeiten" onclick="openEditSale(${firstId})">✏️</button>
-                            <button class="icon-btn" style="color:#f87171" title="Löschen" onclick="openDeleteChoice('${inv}')">🗑️</button>
+                            <button class="icon-btn" style="color:#f87171" title="Storno" onclick="openDeleteChoice('${inv}')">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -517,14 +514,28 @@
             });
         }
 
+        // FIX: KOPIEREN ALLER ARTIKEL EINER RECHNUNG
         function copySale(id) {
             const s = salesLog.find(x => x.id === id);
+            // Alle Items dieser Rechnung finden
+            const allItems = salesLog.filter(x => x.invoiceNr === s.invoiceNr);
+            
+            const itemsPayload = allItems.map(it => ({
+                name: it.name,
+                artnr: it.artnr,
+                qty: it.qty,
+                priceTotal: it.total.toFixed(2)
+            }));
+
             const data = {
-                invoiceNr: s.invoiceNr, date: s.date, platform: s.platform,
-                items: [{ name: s.name, artnr: s.artnr, qty: s.qty, priceTotal: s.total.toFixed(2) }]
+                invoiceNr: s.invoiceNr, 
+                date: s.date, 
+                platform: s.platform,
+                items: itemsPayload
             };
+            
             navigator.clipboard.writeText(JSON.stringify(data)).then(()=>{
-                alert("Rechnungs-Daten kopiert!\nÖffne jetzt die RechnungApp und drücke 'Einfügen'.");
+                alert("Rechnungs-Daten (" + itemsPayload.length + " Artikel) kopiert!\nÖffne jetzt die RechnungApp und drücke 'Einfügen'.");
             });
         }
 
@@ -536,11 +547,9 @@
             document.getElementById('inpFile').value = "";
             
             if (!id) {
-                // NEU ANLEGEN
+                // NEU
                 document.getElementById('editId').value = '';
-                // 001-2025 LOGIK
                 const year = new Date().getFullYear();
-                // Filter items for current year
                 const count = inventory.filter(i => i.artnr && i.artnr.endsWith(year)).length + 1;
                 const numStr = String(count).padStart(3, '0');
                 document.getElementById('inpArtnr').value = `${numStr}-${year}`;
@@ -554,10 +563,9 @@
                 document.getElementById('inpZustand').value = 'Neu';
                 document.getElementById('inpNotiz').value = '';
                 document.getElementById('inpBild').value = '';
-                // DELETE BUTTON HIDE
                 document.getElementById('btnDelete').style.display = 'none';
             } else {
-                // BEARBEITEN
+                // EDIT
                 const i = inventory.find(x => x.id === id);
                 document.getElementById('editId').value = id;
                 document.getElementById('inpArtnr').value = i.artnr || "";
@@ -575,7 +583,6 @@
                     document.getElementById('imgPreview').style.display = 'block';
                     document.getElementById('imgTxt').style.display = 'none';
                 }
-                // DELETE BUTTON SHOW
                 document.getElementById('btnDelete').style.display = 'block';
             }
         }
@@ -607,7 +614,7 @@
             }
         }
 
-        // SELL & BASKET
+        // SELL LOGIC
         let basket = [];
         function openSellModal(e, id) {
             e.stopPropagation();
@@ -724,12 +731,14 @@
             document.getElementById('modalEditSale').style.display = 'flex';
         }
         
+        // FIX: Rechnungsnummer Format (E001-2025) beim Ändern beibehalten
         function updateEditSalePrefix() {
             const p = document.getElementById('editSalePlatform').value;
-            const pre = p.charAt(0).toUpperCase();
-            const cur = document.getElementById('editSaleInv').value;
-            const parts = cur.split('-');
-            if(parts.length >= 2) document.getElementById('editSaleInv').value = `${pre}-${parts[1]}-${parts[2]||'25'}`;
+            const newPrefix = p.charAt(0).toUpperCase();
+            const currentInv = document.getElementById('editSaleInv').value;
+            // Ersetzt führenden Buchstaben durch neuen Prefix
+            const newInv = currentInv.replace(/^[A-Za-z]+/, newPrefix);
+            document.getElementById('editSaleInv').value = newInv;
         }
 
         async function saveSaleChanges() {
