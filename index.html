@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V63</title>
+    <title>LagerManager V64</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -21,24 +21,24 @@
             overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* HEADER & TABS */
+        /* HEADER */
         .app-header { background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; padding-top: env(safe-area-inset-top); }
-        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #1a1a1a; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1a1a1a; }
         .header-btn { background: transparent; border: 1px solid #444; color: #aaa; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
 
         .nav-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel); }
-        .nav-tab { flex: 1; background: transparent; border: none; padding: 12px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
+        .nav-tab { flex: 1; background: transparent; border: none; padding: 10px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
         .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); color: #fff; }
 
         /* TOOLBAR */
-        .toolbar { padding: 6px 8px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+        .toolbar { padding: 5px 8px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
         .search-wrapper { position: relative; width: 100%; }
         .search-input { width: 100%; height: 32px; background: #111; border: 1px solid var(--border); border-radius: 6px; padding: 0 30px 0 8px; color: #ccc; box-sizing: border-box; font-size: 0.85rem; }
         .search-clear { position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: none; border: none; color: #777; cursor: pointer; display: none; }
 
         /* STATS */
         .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-        .stat-item { background: var(--panel); padding: 4px; text-align: center; }
+        .stat-item { background: var(--panel); padding: 3px; text-align: center; }
         .stat-lbl { font-size: 0.5rem; color: #777; text-transform: uppercase; display: block; margin-bottom: 1px; }
         .stat-val { font-size: 0.65rem; font-weight: bold; display: block; color: #fff; }
         .text-green { color: var(--success) !important; } 
@@ -47,41 +47,41 @@
         #viewInventory, #viewSales { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
         #viewInventory.active, #viewSales.active { display: block; }
 
-        /* INVENTORY LIST - ULTRA COMPACT */
-        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 5px 8px; border-bottom: 1px solid #2a2a2a; align-items: flex-start; background: var(--bg); cursor: pointer; gap: 8px; }
+        /* INVENTORY LIST - EXTREM KOMPAKT */
+        .list-row { display: grid; grid-template-columns: 25px 1fr auto; padding: 4px 6px; border-bottom: 1px solid #2a2a2a; align-items: center; background: var(--bg); cursor: pointer; gap: 6px; }
         .list-row:hover { background: #222; }
-        .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.7rem; border: 1px solid #333; border-radius: 4px; height: 18px; line-height: 18px; background: #151515; margin-top: 2px;}
-        .item-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; min-width: 0; }
+        .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.65rem; border: 1px solid #333; border-radius: 3px; height: 16px; line-height: 16px; background: #151515; }
         
-        /* SCHRIFT NOCH KLEINER */
-        .item-name { font-weight: 600; color: #eee; font-size: 0.65rem; line-height: 1.1; word-wrap: break-word; white-space: normal; }
-        .meta-line { font-size: 0.6rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; margin-top: 1px;}
-        .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 2px; border-radius: 3px; font-size: 0.55rem; }
-        .icon-badge { font-size: 0.65rem; opacity: 0.7; }
-        .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 3px 6px; font-size: 0.6rem; cursor: pointer; border-radius: 3px; }
+        .item-info { display: flex; flex-direction: column; gap: 0px; overflow: hidden; min-width: 0; }
+        
+        /* SCHRIFTART HIER SEHR KLEIN GEMACHT */
+        .item-name { font-weight: 600; color: #ddd; font-size: 0.6rem; line-height: 1.1; word-wrap: break-word; white-space: normal; }
+        .meta-line { font-size: 0.55rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; margin-top: 1px;}
+        .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 2px; border-radius: 2px; font-size: 0.5rem; }
+        .icon-badge { font-size: 0.6rem; opacity: 0.7; }
+        .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 2px 5px; font-size: 0.6rem; cursor: pointer; border-radius: 3px; }
 
-        /* SALES LIST */
-        .sale-card { margin-bottom: 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
-        .sale-header { padding: 6px 10px; background: #222; display: flex; justify-content: space-between; font-size: 0.75rem; color: #ccc; font-weight: bold; }
-        .sale-body { padding: 0; } /* Keine Polsterung global, da Items eigene haben */
+        /* SALES LIST - COMPACT */
+        .sale-card { margin-bottom: 6px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
+        .sale-header { padding: 5px 8px; background: #222; display: flex; justify-content: space-between; font-size: 0.7rem; color: #ccc; font-weight: bold; }
+        .sale-body { padding: 0; }
         
         .sale-item-row { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 8px 10px; border-bottom: 1px solid #252525; 
-            color: #ddd; font-size: 0.8rem; 
+            padding: 6px 8px; border-bottom: 1px solid #252525; 
+            color: #ddd; font-size: 0.75rem; 
         }
-        .item-details-block { flex: 1; margin-right: 10px; }
-        .item-tools { display: flex; gap: 8px; }
+        .item-details-block { flex: 1; margin-right: 8px; display:flex; align-items:center; justify-content: space-between;}
+        .item-tools { display: flex; gap: 6px; margin-left:6px; }
 
-        .sale-footer { padding: 6px 10px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+        .sale-footer { padding: 5px 8px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Buttons für einzelne Zeilen */
-        .mini-btn { border: 1px solid #333; background: #222; width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; }
+        .mini-btn { border: 1px solid #333; background: #222; width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; }
         .mini-btn.edit { color: #fbbf24; }
         .mini-btn.del { color: #ef4444; border-color: #522; background: #311; }
 
         /* FAB */
-        .fab { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: #fff; width: 56px; height: 56px; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; padding-bottom: 4px;}
+        .fab { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: #fff; width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; padding-bottom: 4px;}
 
         /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
@@ -91,11 +91,11 @@
         .modal-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: #222; }
 
         /* INPUTS */
-        .form-grid { display: grid; gap: 12px; }
-        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        label { display: block; font-size: 0.65rem; color: #888; margin-bottom: 3px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        input, select, textarea { width: 100%; height: 38px; background: #111; border: 1px solid #444; color: #ddd; padding: 0 8px; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
-        textarea { height: 70px; padding: 8px; }
+        .form-grid { display: grid; gap: 10px; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; font-size: 0.65rem; color: #888; margin-bottom: 2px; text-transform: uppercase; font-weight: 700; }
+        input, select, textarea { width: 100%; height: 36px; background: #111; border: 1px solid #444; color: #ddd; padding: 0 8px; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
+        textarea { height: 60px; padding: 8px; }
 
         .btn { border: none; padding: 10px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; border-radius: 6px; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;}
         .btn-primary { background: var(--primary); color: #fff; }
@@ -103,21 +103,22 @@
         .btn-danger { background: var(--danger); color: #fff; }
 
         /* SETTINGS & REST */
-        .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-        .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+        .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
-        .switch-label { font-size: 0.85rem; color: #ddd; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .switch-label { font-size: 0.8rem; color: #ddd; }
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #444; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); border-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(18px); }
+        input:checked + .slider:before { transform: translateX(16px); }
+        
         .action-list { display: flex; flex-direction: column; gap: 8px; }
-        .action-btn { display: flex; align-items: center; justify-content: space-between; background: #222; border: 1px solid #333; padding: 12px; border-radius: 6px; color: #ddd; cursor: pointer; font-size: 0.85rem; text-decoration: none; }
+        .action-btn { display: flex; align-items: center; justify-content: space-between; background: #222; border: 1px solid #333; padding: 10px; border-radius: 6px; color: #ddd; cursor: pointer; font-size: 0.8rem; }
         .action-btn:active { background: #333; }
         .action-icon { font-size: 1.1rem; }
-        .img-box { width: 100%; height: 140px; background: #000; border: 1px dashed #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 4px; cursor: pointer; }
+        .img-box { width: 100%; height: 120px; background: #000; border: 1px dashed #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 4px; cursor: pointer; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .close-img { position: absolute; top: 30px; right: 20px; color: #fff; background: #333; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
         #modalImageViewer { z-index: 300; background: #000; }
@@ -125,15 +126,20 @@
         .delete-choice-btn { text-align: center; padding: 15px; background: #333; border: 1px solid #444; cursor: pointer; border-radius: 6px; }
         .del-title { display: block; font-weight: bold; font-size: 0.9rem; color: #eee; margin-bottom: 4px; }
         #searchDropdown { display: none; background: #222; border: 1px solid #444; margin-top: 2px; max-height: 200px; overflow-y: auto; position: absolute; width: 100%; z-index: 50; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        .search-res { padding: 12px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.85rem; }
+        .search-res { padding: 10px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.8rem; }
         .basket-item { background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 6px; border-radius: 6px; }
+        
+        /* INVOICE PREVIEW TABLE */
+        .inv-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color:#ddd; margin-top:10px; }
+        .inv-table th { text-align: left; border-bottom: 1px solid #444; padding: 4px; color:#888; }
+        .inv-table td { padding: 6px 4px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V63</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V64</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -259,7 +265,7 @@
             <div class="modal-header">Position Bearbeiten</div>
             <div class="modal-body">
                 <input type="hidden" id="editSaleId">
-                <div class="form-grid">
+                <input type="hidden" id="editSaleOriginalInv"> <div class="form-grid">
                     <div><label>Rechnungs-Nr.</label><input type="text" id="editSaleInv"></div>
                     <div><label>Artikelname</label><input type="text" id="editSaleName"></div>
                     <div class="row-2">
@@ -286,6 +292,29 @@
         </div>
     </div>
 
+    <div id="modalInvoiceView" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">Rechnungs-Vorschau</div>
+            <div class="modal-body">
+                <div style="background:#222; padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <div id="invViewNum" style="font-weight:bold; color:var(--primary); font-size:1.1rem; margin-bottom:4px;"></div>
+                    <div id="invViewDate" style="color:#aaa; font-size:0.8rem;"></div>
+                    <div id="invViewPlat" style="color:#aaa; font-size:0.8rem;"></div>
+                </div>
+                <table class="inv-table">
+                    <thead><tr><th>Art-Nr</th><th>Name</th><th>Menge</th><th style="text-align:right">Gesamt</th></tr></thead>
+                    <tbody id="invViewBody"></tbody>
+                    <tfoot>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-top:10px;">Total:</td><td style="text-align:right; font-weight:bold; padding-top:10px; color:var(--success);" id="invViewTotal"></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModals()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalSettings" class="modal-overlay">
         <div class="modal-box" style="height:auto;">
             <div class="modal-header">Optionen</div>
@@ -300,7 +329,6 @@
                         </label>
                     </div>
                 </div>
-
                 <div class="settings-group">
                     <div class="action-list">
                         <div class="action-btn" onclick="exportBackup()">
@@ -464,7 +492,6 @@
             });
         }
 
-        // NEU: SALES RENDER MIT ZEILEN-BUTTONS
         function renderSales(term) {
             const list = document.getElementById('viewSales');
             list.innerHTML = '';
@@ -484,7 +511,6 @@
                 const g = groups[inv];
                 let totalProfit = 0;
                 
-                // Generiere Zeilen pro Artikel
                 let bodyHtml = g.items.map(it => {
                     const buy = (it.buyPrice || 0) * (it.qty || 1);
                     const prof = (it.total||0) - (it.shipping||0) - (it.fees||0) - buy;
@@ -492,8 +518,8 @@
                     return `
                     <div class="sale-item-row">
                         <div class="item-details-block">
-                            <div style="font-weight:bold; margin-bottom:2px;">${it.name}</div>
-                            <div style="font-size:0.7rem; color:#888;">${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€</div>
+                            <span style="font-weight:bold; font-size:0.8rem; margin-right:6px;">${it.name}</span>
+                            <span style="font-size:0.65rem; color:#888;">${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€</span>
                         </div>
                         <div class="item-tools">
                             <button class="mini-btn edit" title="Bearbeiten" onclick="openEditSale(${it.id})">✏️</button>
@@ -503,8 +529,6 @@
                 }).join('');
 
                 const profClass = totalProfit >= 0 ? '#34d399' : '#ef4444';
-                // Buttons für ganze Rechnung
-                // Wir nehmen die ID des ersten Items für das "Kopieren", da kopieren immer alles kopiert
                 const anyId = g.items[0].id;
 
                 const div = document.createElement('div');
@@ -514,8 +538,9 @@
                     <div class="sale-body">${bodyHtml}</div>
                     <div class="sale-footer">
                         <div style="font-weight:bold; color:${profClass}">Gw: ${totalProfit.toFixed(2)} €</div>
-                        <div class="sale-actions">
-                             <button class="btn-action" style="padding:6px 12px; font-size:0.8rem;" onclick="copySale(${anyId})">📋 RECHNUNG KOPIEREN</button>
+                        <div class="sale-actions" style="display:flex; gap:10px;">
+                             <button class="icon-btn" onclick="showInvoicePreview('${inv}')" title="Rechnung ansehen">👁️</button>
+                             <button class="icon-btn" onclick="copySale(${anyId})" title="Kopieren">📋</button>
                         </div>
                     </div>
                 `;
@@ -523,9 +548,33 @@
             });
         }
 
+        // --- INVOICE VIEW ---
+        function showInvoicePreview(invNr) {
+            const items = salesLog.filter(s => s.invoiceNr === invNr);
+            if(!items.length) return;
+            
+            document.getElementById('invViewNum').innerText = "Rg: " + invNr;
+            document.getElementById('invViewDate').innerText = "Datum: " + formatDate(items[0].date);
+            document.getElementById('invViewPlat').innerText = "Plattform: " + items[0].platform;
+            
+            const tbody = document.getElementById('invViewBody');
+            tbody.innerHTML = '';
+            let total = 0;
+            items.forEach(it => {
+                total += it.total;
+                tbody.innerHTML += `<tr>
+                    <td>${it.artnr || '-'}</td>
+                    <td>${it.name}</td>
+                    <td>${it.qty}</td>
+                    <td style="text-align:right">${it.total.toFixed(2)} €</td>
+                </tr>`;
+            });
+            document.getElementById('invViewTotal').innerText = total.toFixed(2) + ' €';
+            document.getElementById('modalInvoiceView').style.display = 'flex';
+        }
+
         function copySale(id) {
             const s = salesLog.find(x => x.id === id);
-            // Alle Items der gleichen Rechnung finden
             const allItems = salesLog.filter(x => x.invoiceNr === s.invoiceNr);
             
             const itemsPayload = allItems.map(it => ({
@@ -543,7 +592,7 @@
             };
             
             navigator.clipboard.writeText(JSON.stringify(data)).then(()=>{
-                alert("Kopiert (" + itemsPayload.length + " Artikel)!\nÖffne jetzt die RechnungApp.");
+                alert("Kopiert!");
             });
         }
 
@@ -726,6 +775,7 @@
         function openEditSale(id) {
             const s = salesLog.find(x => x.id === id);
             document.getElementById('editSaleId').value = id;
+            document.getElementById('editSaleOriginalInv').value = s.invoiceNr; // MERKEN
             document.getElementById('editSaleInv').value = s.invoiceNr;
             document.getElementById('editSaleName').value = s.name;
             document.getElementById('editSalePlatform').value = s.platform || '';
@@ -747,25 +797,47 @@
 
         async function saveSaleChanges() {
             const id = parseInt(document.getElementById('editSaleId').value);
-            const s = salesLog.find(x => x.id === id);
-            const newQ = parseInt(document.getElementById('editSaleQty').value);
-            if(newQ > s.qty) {
-                 const diff = newQ - s.qty;
-                 const it = inventory.find(x => x.artnr === s.artnr);
-                 if(it && it.menge < diff) { alert("Lagerbestand zu niedrig!"); return; }
-                 if(it) { it.menge -= diff; await dbOp('inventory', 'put', it); }
-            } else if(newQ < s.qty) {
-                 const diff = s.qty - newQ;
-                 const it = inventory.find(x => x.artnr === s.artnr);
-                 if(it) { it.menge += diff; await dbOp('inventory', 'put', it); }
+            const origInv = document.getElementById('editSaleOriginalInv').value;
+            
+            const newInvNr = document.getElementById('editSaleInv').value;
+            const newPlat = document.getElementById('editSalePlatform').value;
+            const newDate = document.getElementById('editSaleDate').value;
+            
+            // ALLE ARTIKEL DER GRUPPE HOLEN
+            const groupItems = salesLog.filter(x => x.invoiceNr === origInv);
+            
+            // Jeden Artikel der Gruppe aktualisieren (Plattform, Datum, Rechnungsnummer)
+            // Nur das spezifisch bearbeitete Item bekommt Mengen/Preis Updates
+            for(let item of groupItems) {
+                item.invoiceNr = newInvNr;
+                item.platform = newPlat;
+                item.date = newDate;
+                
+                if(item.id === id) {
+                    const newQ = parseInt(document.getElementById('editSaleQty').value);
+                    const diff = newQ - item.qty; // Unterschied berechnen
+                    
+                    if(diff !== 0) {
+                         const invItem = inventory.find(x => x.artnr === item.artnr);
+                         // Lagerbestand anpassen
+                         if(diff > 0 && invItem && invItem.menge < diff) {
+                             alert("Nicht genug Lagerbestand für Erhöhung!");
+                             return; 
+                         }
+                         if(invItem) {
+                             invItem.menge -= diff;
+                             await dbOp('inventory', 'put', invItem);
+                         }
+                         item.qty = newQ;
+                    }
+                    
+                    item.total = parseFloat(document.getElementById('editSalePrice').value);
+                    item.shipping = parseFloat(document.getElementById('editSaleShipping').value);
+                    item.fees = parseFloat(document.getElementById('editSaleFees').value);
+                }
+                await dbOp('sales', 'put', item);
             }
-            s.invoiceNr = document.getElementById('editSaleInv').value;
-            s.platform = document.getElementById('editSalePlatform').value;
-            s.qty = newQ;
-            s.total = parseFloat(document.getElementById('editSalePrice').value);
-            s.shipping = parseFloat(document.getElementById('editSaleShipping').value);
-            s.fees = parseFloat(document.getElementById('editSaleFees').value);
-            await dbOp('sales', 'put', s);
+            
             await loadData(); closeModals(); triggerAutoBackup();
         }
 
