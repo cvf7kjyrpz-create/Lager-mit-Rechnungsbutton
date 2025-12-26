@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V61</title>
+    <title>LagerManager V62</title>
     <style>
         :root {
             --bg: #1e1e1e; 
@@ -13,9 +13,8 @@
             --border: #333; 
             --primary: #3b82f6; 
             --text: #e0e0e0; 
-            --danger: #b91c1c; 
-            --success: #059669; 
-            --profit: #d97706; 
+            --danger: #ef4444; 
+            --success: #10b981; 
             color-scheme: dark; 
         }
         body { 
@@ -33,7 +32,7 @@
 
         /* TABS */
         .nav-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel); }
-        .nav-tab { flex: 1; background: transparent; border: none; padding: 10px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
+        .nav-tab { flex: 1; background: transparent; border: none; padding: 12px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.75rem; transition: 0.2s; }
         .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); color: #fff; }
 
         /* TOOLBAR */
@@ -47,25 +46,25 @@
         .stat-item { background: var(--panel); padding: 4px; text-align: center; }
         .stat-lbl { font-size: 0.5rem; color: #777; text-transform: uppercase; display: block; margin-bottom: 1px; }
         .stat-val { font-size: 0.65rem; font-weight: bold; display: block; color: #fff; }
-        .text-green { color: #34d399 !important; } 
+        .text-green { color: var(--success) !important; } 
 
         /* VIEWS */
         #viewInventory, #viewSales { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
         #viewInventory.active, #viewSales.active { display: block; }
 
-        /* INVENTORY LIST */
-        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 8px; border-bottom: 1px solid #2a2a2a; align-items: flex-start; background: var(--bg); cursor: pointer; gap: 8px; }
+        /* INVENTORY LIST - SUPER COMPACT */
+        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 6px 8px; border-bottom: 1px solid #2a2a2a; align-items: flex-start; background: var(--bg); cursor: pointer; gap: 8px; }
         .list-row:hover { background: #222; }
         .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.75rem; border: 1px solid #333; border-radius: 4px; height: 20px; line-height: 20px; background: #151515; margin-top: 2px;}
         
-        .item-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
+        .item-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; min-width: 0; }
         
-        /* FIX: Name bricht um (nicht abgeschnitten) */
-        .item-name { font-weight: 600; color: #eee; font-size: 0.8rem; line-height: 1.25; word-wrap: break-word; white-space: normal; }
+        /* SCHRIFTART NOCH KLEINER */
+        .item-name { font-weight: 600; color: #eee; font-size: 0.7rem; line-height: 1.2; word-wrap: break-word; white-space: normal; }
         
-        /* FIX: Größe neben Artikelnummer */
-        .meta-line { font-size: 0.7rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;}
-        .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 3px; border-radius: 3px; font-size: 0.65rem; }
+        .meta-line { font-size: 0.65rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; margin-top: 2px;}
+        .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 3px; border-radius: 3px; font-size: 0.6rem; }
+        .icon-badge { font-size: 0.7rem; opacity: 0.7; }
 
         .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 4px 8px; font-size: 0.65rem; cursor: pointer; border-radius: 3px; }
 
@@ -75,8 +74,9 @@
         .sale-body { padding: 8px 10px; border-bottom: 1px solid #252525; }
         .sale-item-row { display: flex; justify-content: space-between; color: #ddd; padding: 3px 0; font-size: 0.8rem; }
         .sale-footer { padding: 6px 10px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
-        .sale-actions { display: flex; gap: 12px; }
-        .icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0 4px; opacity: 0.8; transition: 0.2s; }
+        .sale-actions { display: flex; gap: 15px; }
+        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 2px; opacity: 0.9; transition: 0.2s; }
+        .icon-btn:hover { transform: scale(1.1); }
 
         /* FAB */
         .fab { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: #fff; width: 56px; height: 56px; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; padding-bottom: 4px;}
@@ -111,6 +111,7 @@
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); border-color: var(--success); }
         input:checked + .slider:before { transform: translateX(18px); }
+        
         .action-list { display: flex; flex-direction: column; gap: 8px; }
         .action-btn { display: flex; align-items: center; justify-content: space-between; background: #222; border: 1px solid #333; padding: 12px; border-radius: 6px; color: #ddd; cursor: pointer; font-size: 0.85rem; text-decoration: none; }
         .action-btn:active { background: #333; }
@@ -134,7 +135,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V61</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V62</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -330,15 +331,15 @@
 
     <div id="modalDeleteChoice" class="modal-overlay">
         <div class="modal-box" style="height: auto;">
-            <div class="modal-header">Löschen</div>
+            <div class="modal-header">Verkauf stornieren</div>
             <div class="modal-body" style="display:grid; gap:10px;">
                 <input type="hidden" id="delInvoiceTarget">
                 <div class="delete-choice-btn" onclick="executeDelete(true)">
-                    <span class="del-title">📦 Lager aufstocken & löschen</span>
-                    <span class="del-desc">Artikel kommen zurück ins Lager.</span>
+                    <span class="del-title">📦 Ware zurückbuchen (Storno)</span>
+                    <span class="del-desc">Artikelbestand im Lager wird erhöht.</span>
                 </div>
                 <div class="delete-choice-btn" onclick="executeDelete(false)" style="border-color:#522; background:#311;">
-                    <span class="del-title" style="color:#faa">🗑️ Nur Liste löschen</span>
+                    <span class="del-title" style="color:#faa">🗑️ Nur Eintrag löschen</span>
                     <span class="del-desc">Lagerbestand bleibt unverändert.</span>
                 </div>
             </div>
@@ -385,7 +386,6 @@
             salesLog = await dbOp('sales', 'getAll');
             renderCurrentView();
             updateStats();
-            // Load Settings
             const saved = localStorage.getItem('lagerAutoBackup');
             if(saved === 'true') {
                 autoBackupMode = true;
@@ -447,14 +447,18 @@
                 div.className = 'list-row';
                 div.onclick = (e) => { if(e.target.tagName !== 'BUTTON') openEditModal(i.id); };
                 const art = i.artnr || '';
-                // FIX: Größe unten neben Art-Nr
-                const sizeStr = i.groesse ? `<span class="size-badge">Gr: ${i.groesse}</span>` : '';
                 
+                // SIZE UND ICONS
+                const sizeStr = i.groesse ? `<span class="size-badge">Gr: ${i.groesse}</span>` : '';
+                let icons = "";
+                if(i.bild) icons += '<span class="icon-badge">🖼️</span> ';
+                if(i.notiz) icons += '<span class="icon-badge">📝</span>';
+
                 div.innerHTML = `
                     <div class="qty-box">${i.menge}</div>
                     <div class="item-info">
                         <span class="item-name">${i.name}</span>
-                        <span class="meta-line">${art} ${sizeStr} <span style="margin-left:auto;">${i.loc || ''}</span></span>
+                        <span class="meta-line">${art} ${sizeStr} <span style="margin-left:auto;">${icons} ${i.loc || ''}</span></span>
                     </div>
                     <div class="item-actions">
                         <span class="price-tag">${(i.preis||0).toFixed(2)} €</span>
@@ -471,7 +475,6 @@
             const groups = {};
             salesLog.forEach(s => {
                 if(term && !s.name.toLowerCase().includes(term) && !s.invoiceNr.toLowerCase().includes(term)) return;
-                // Init Gruppe
                 if (!groups[s.invoiceNr]) groups[s.invoiceNr] = { items: [], total: 0, date: s.date, platform: s.platform, id: s.id };
                 groups[s.invoiceNr].items.push(s);
                 groups[s.invoiceNr].total += (s.total || 0);
@@ -506,7 +509,7 @@
                         <div class="sale-actions">
                             <button class="icon-btn" style="color:#3b82f6" title="Kopieren" onclick="copySale(${firstId})">📋</button>
                             <button class="icon-btn" style="color:#fbbf24" title="Bearbeiten" onclick="openEditSale(${firstId})">✏️</button>
-                            <button class="icon-btn" style="color:#f87171" title="Storno" onclick="openDeleteChoice('${inv}')">🗑️</button>
+                            <button class="icon-btn" style="color:#ef4444" title="Storno/Löschen" onclick="openDeleteChoice('${inv}')">↩️</button>
                         </div>
                     </div>
                 `;
@@ -514,10 +517,8 @@
             });
         }
 
-        // FIX: KOPIEREN ALLER ARTIKEL EINER RECHNUNG
         function copySale(id) {
             const s = salesLog.find(x => x.id === id);
-            // Alle Items dieser Rechnung finden
             const allItems = salesLog.filter(x => x.invoiceNr === s.invoiceNr);
             
             const itemsPayload = allItems.map(it => ({
@@ -535,7 +536,7 @@
             };
             
             navigator.clipboard.writeText(JSON.stringify(data)).then(()=>{
-                alert("Rechnungs-Daten (" + itemsPayload.length + " Artikel) kopiert!\nÖffne jetzt die RechnungApp und drücke 'Einfügen'.");
+                alert("Daten kopiert (" + itemsPayload.length + " Artikel)!\nÖffne jetzt die RechnungApp und drücke 'Einfügen'.");
             });
         }
 
@@ -547,7 +548,6 @@
             document.getElementById('inpFile').value = "";
             
             if (!id) {
-                // NEU
                 document.getElementById('editId').value = '';
                 const year = new Date().getFullYear();
                 const count = inventory.filter(i => i.artnr && i.artnr.endsWith(year)).length + 1;
@@ -565,7 +565,6 @@
                 document.getElementById('inpBild').value = '';
                 document.getElementById('btnDelete').style.display = 'none';
             } else {
-                // EDIT
                 const i = inventory.find(x => x.id === id);
                 document.getElementById('editId').value = id;
                 document.getElementById('inpArtnr').value = i.artnr || "";
@@ -731,12 +730,10 @@
             document.getElementById('modalEditSale').style.display = 'flex';
         }
         
-        // FIX: Rechnungsnummer Format (E001-2025) beim Ändern beibehalten
         function updateEditSalePrefix() {
             const p = document.getElementById('editSalePlatform').value;
             const newPrefix = p.charAt(0).toUpperCase();
             const currentInv = document.getElementById('editSaleInv').value;
-            // Ersetzt führenden Buchstaben durch neuen Prefix
             const newInv = currentInv.replace(/^[A-Za-z]+/, newPrefix);
             document.getElementById('editSaleInv').value = newInv;
         }
