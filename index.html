@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V65</title>
+    <title>LagerManager V66</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -53,31 +53,42 @@
         .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.6rem; border: 1px solid #333; border-radius: 3px; height: 14px; line-height: 14px; background: #151515; }
         
         .item-info { display: flex; flex-direction: column; gap: 0px; overflow: hidden; min-width: 0; }
-        
-        /* SCHRIFTART VIEL KLEINER */
         .item-name { font-weight: 600; color: #ddd; font-size: 0.55rem; line-height: 1.1; word-wrap: break-word; white-space: normal; }
         .meta-line { font-size: 0.5rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; margin-top: 1px;}
         .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 2px; border-radius: 2px; font-size: 0.5rem; }
         .icon-badge { font-size: 0.55rem; opacity: 0.7; }
         .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 2px 4px; font-size: 0.55rem; cursor: pointer; border-radius: 3px; }
 
-        /* SALES LIST - COMPACT */
-        .sale-card { margin-bottom: 5px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
-        .sale-header { padding: 4px 8px; background: #222; display: flex; justify-content: space-between; font-size: 0.65rem; color: #ccc; font-weight: bold; }
+        /* SALES LIST - EXTREMELY COMPACT & WHITE LINE */
+        .sale-card { 
+            margin-bottom: 8px; /* Abstand zum nächsten */
+            background: var(--bg); 
+            /* HIER DIE WEISSE TRENNLINIE */
+            border-bottom: 1px solid #ffffff;
+            padding-bottom: 2px;
+        }
+        
+        .sale-header { padding: 3px 6px; background: #222; display: flex; justify-content: space-between; font-size: 0.6rem; color: #ccc; font-weight: bold; }
         .sale-body { padding: 0; }
         
         .sale-item-row { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 5px 8px; border-bottom: 1px solid #252525; 
-            color: #ddd; font-size: 0.7rem; 
+            padding: 4px 6px; border-bottom: 1px solid #252525; 
+            color: #ddd; font-size: 0.65rem; /* Schrift kleiner */
         }
+        
         .item-details-block { flex: 1; margin-right: 6px; display:flex; align-items:center; justify-content: space-between; overflow:hidden;}
         .item-left { display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-        .item-tools { display: flex; gap: 5px; margin-left:6px; flex-shrink:0; }
-
-        .sale-footer { padding: 4px 8px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
         
-        .mini-btn { border: 1px solid #333; background: #222; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; }
+        /* Namen und Infos noch kleiner */
+        .item-left-name { font-weight:bold; font-size:0.7rem; }
+        .item-left-meta { font-size:0.55rem; color:#888; }
+
+        .item-tools { display: flex; gap: 4px; margin-left:6px; flex-shrink:0; }
+
+        .sale-footer { padding: 3px 6px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem;}
+        
+        .mini-btn { border: 1px solid #333; background: #222; width: 22px; height: 22px; border-radius: 3px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
         .mini-btn.edit { color: #fbbf24; }
         .mini-btn.del { color: #ef4444; border-color: #522; background: #311; }
         .mini-btn.view { color: #3b82f6; border-color: #223; background: #112; }
@@ -138,7 +149,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V65</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V66</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -494,8 +505,8 @@
                     <div class="sale-item-row">
                         <div class="item-details-block">
                             <div class="item-left">
-                                <span style="font-weight:bold; font-size:0.75rem;">${it.name}</span>
-                                <span style="font-size:0.6rem; color:#888;">${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€</span>
+                                <span class="item-left-name">${it.name}</span>
+                                <span class="item-left-meta">${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€</span>
                             </div>
                         </div>
                         <div class="item-tools">
@@ -517,7 +528,7 @@
                     <div class="sale-footer">
                         <div style="font-weight:bold; color:${profClass}">Gw: ${totalProfit.toFixed(2)} €</div>
                         <div class="sale-actions">
-                             <button class="btn-action" style="padding:6px 12px; font-size:0.75rem;" onclick="copySale(${anyId})">📋 RECHNUNG KOPIEREN</button>
+                             <button class="btn-action" style="padding:4px 8px; font-size:0.65rem;" onclick="copySale(${anyId})">📋 RECHNUNG KOPIEREN</button>
                         </div>
                     </div>
                 `;
@@ -733,7 +744,7 @@
                     qty: item.qty, buyPrice: dbItem ? dbItem.preis : 0, 
                     shipping: (i === 0 ? ship : 0), fees: (i === 0 ? fees : 0),
                     total: (item.priceTotal || 0) + (i === 0 ? ship : 0),
-                    img: item.origImg // Hier speichern wir das Bild fest zum Verkauf!
+                    img: item.origImg 
                 });
             }
             await loadData(); closeModals(); switchTab('sales'); triggerAutoBackup();
