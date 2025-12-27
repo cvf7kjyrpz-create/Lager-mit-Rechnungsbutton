@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V73</title>
+    <title>LagerManager V74</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -130,7 +130,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V73</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V74</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -844,19 +844,27 @@
         // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
         function exportCSV() {
             let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
-            let grandTotalVK = 0; // New variable
-            let grandTotalEK = 0; // New variable
+            let grandTotalVK = 0; 
+            let grandTotalEK = 0;
+            let grandTotalShip = 0;
+            let grandTotalFees = 0;
+            let grandTotalProfit = 0;
 
             salesLog.forEach(s => {
                 const buyPrice = s.buyPrice || 0;
                 const totalBuy = buyPrice * (s.qty || 1);
                 const revenue = s.total || 0;
-                grandTotalVK += revenue; // Accumulate
-                grandTotalEK += totalBuy; // Accumulate
-
                 const ship = s.shipping || 0;
                 const fees = s.fees || 0;
                 const profit = revenue - ship - fees - totalBuy;
+                
+                // Accumulate ALL Columns
+                grandTotalEK += totalBuy;
+                grandTotalVK += revenue;
+                grandTotalShip += ship;
+                grandTotalFees += fees;
+                grandTotalProfit += profit;
+
                 const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
 
                 let row = [
@@ -875,9 +883,11 @@
                 csvContent += row + "\n";
             });
 
-            // Add Total Row
+            // Add Total Row with SUMS for ALL money columns
             const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
-            csvContent += `;;;;;${fmt(grandTotalEK)};${fmt(grandTotalVK)};;;\n`;
+            
+            // Die leeren Semikolons entsprechen den Spalten: Nr, Plattform, Wann, Menge, Name
+            csvContent += `;;;;;${fmt(grandTotalEK)};${fmt(grandTotalVK)};${fmt(grandTotalShip)};${fmt(grandTotalFees)};${fmt(grandTotalProfit)}\n`;
 
             const bom = "\uFEFF";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
