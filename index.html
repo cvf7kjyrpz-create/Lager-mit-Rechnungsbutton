@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V69</title>
+    <title>LagerManager V72</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -130,7 +130,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V69</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V72</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -464,7 +464,12 @@
             list.innerHTML = '';
             const groups = {};
             salesLog.forEach(s => {
-                if(term && !s.name.toLowerCase().includes(term) && !s.invoiceNr.toLowerCase().includes(term)) return;
+                if(term && 
+                   !s.name.toLowerCase().includes(term) && 
+                   !s.invoiceNr.toLowerCase().includes(term) &&
+                   !(s.artnr && s.artnr.toLowerCase().includes(term))
+                ) return;
+
                 if (!groups[s.invoiceNr]) groups[s.invoiceNr] = { items: [], total: 0, date: s.date, platform: s.platform };
                 groups[s.invoiceNr].items.push(s);
                 groups[s.invoiceNr].total += (s.total || 0);
@@ -482,12 +487,18 @@
                     const buy = (it.buyPrice || 0) * (it.qty || 1);
                     const prof = (it.total||0) - (it.shipping||0) - (it.fees||0) - buy;
                     totalProfit += prof;
+
+                    const singleColor = prof >= 0 ? 'var(--success)' : 'var(--danger)';
+
                     return `
                     <div class="sale-item-row">
                         <div class="item-details-block">
                             <div class="item-left">
                                 <span class="item-left-name">${it.name}</span>
-                                <span class="item-left-meta">${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€</span>
+                                <span class="item-left-meta">
+                                    ${it.artnr} | ${it.qty}x | ${it.total.toFixed(2)}€ 
+                                    <span style="color:${singleColor}; margin-left:6px; font-weight:bold;">(Gw: ${prof.toFixed(2)}€)</span>
+                                </span>
                             </div>
                         </div>
                         <div class="item-tools">
@@ -538,7 +549,6 @@
             const s = salesLog.find(x => x.id === id);
             const allItems = salesLog.filter(x => x.invoiceNr === s.invoiceNr);
             
-            // Versandkosten summieren (falls auf mehrere Artikel verteilt oder einzeln)
             const totalShipping = allItems.reduce((sum, item) => sum + (item.shipping || 0), 0);
             
             const itemsPayload = allItems.map(it => ({
@@ -549,7 +559,7 @@
                 invoiceNr: s.invoiceNr, 
                 date: s.date, 
                 platform: s.platform, 
-                shipping: totalShipping, // WICHTIG: Versand wird jetzt übergeben!
+                shipping: totalShipping, 
                 items: itemsPayload
             };
             
@@ -834,11 +844,13 @@
         // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
         function exportCSV() {
             let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
+            let grandTotalVK = 0; // New variable
 
             salesLog.forEach(s => {
                 const buyPrice = s.buyPrice || 0;
                 const totalBuy = buyPrice * (s.qty || 1);
                 const revenue = s.total || 0;
+                grandTotalVK += revenue; // Accumulate
                 const ship = s.shipping || 0;
                 const fees = s.fees || 0;
                 const profit = revenue - ship - fees - totalBuy;
@@ -859,6 +871,10 @@
 
                 csvContent += row + "\n";
             });
+
+            // Add Total Row
+            const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
+            csvContent += `;;;;;GESAMT;${fmt(grandTotalVK)};;;\n`;
 
             const bom = "\uFEFF";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
