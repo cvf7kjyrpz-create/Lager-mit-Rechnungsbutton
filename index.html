@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V72</title>
+    <title>LagerManager V73</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
@@ -130,7 +130,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V72</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V73</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -487,7 +487,7 @@
                     const buy = (it.buyPrice || 0) * (it.qty || 1);
                     const prof = (it.total||0) - (it.shipping||0) - (it.fees||0) - buy;
                     totalProfit += prof;
-
+                    
                     const singleColor = prof >= 0 ? 'var(--success)' : 'var(--danger)';
 
                     return `
@@ -845,12 +845,15 @@
         function exportCSV() {
             let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
             let grandTotalVK = 0; // New variable
+            let grandTotalEK = 0; // New variable
 
             salesLog.forEach(s => {
                 const buyPrice = s.buyPrice || 0;
                 const totalBuy = buyPrice * (s.qty || 1);
                 const revenue = s.total || 0;
                 grandTotalVK += revenue; // Accumulate
+                grandTotalEK += totalBuy; // Accumulate
+
                 const ship = s.shipping || 0;
                 const fees = s.fees || 0;
                 const profit = revenue - ship - fees - totalBuy;
@@ -874,7 +877,7 @@
 
             // Add Total Row
             const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
-            csvContent += `;;;;;GESAMT;${fmt(grandTotalVK)};;;\n`;
+            csvContent += `;;;;;${fmt(grandTotalEK)};${fmt(grandTotalVK)};;;\n`;
 
             const bom = "\uFEFF";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
