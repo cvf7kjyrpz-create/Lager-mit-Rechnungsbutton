@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>LagerManager V74</title>
+    <title>LagerManager V75</title>
     <style>
         :root {
             --bg: #1e1e1e; --panel: #252525; --border: #333; 
             --primary: #3b82f6; --text: #e0e0e0; 
-            --danger: #ef4444; --success: #10b981; 
+            --danger: #7f1d1d; --danger-text: #fecaca;
+            --highlight-bg: #422006; --highlight-border: #a16207;
+            --success: #10b981; 
             color-scheme: dark; 
         }
         body { 
@@ -48,12 +50,26 @@
         #viewInventory.active, #viewSales.active { display: block; }
 
         /* INVENTORY LIST */
-        .list-row { display: grid; grid-template-columns: 22px 1fr auto; padding: 3px 5px; border-bottom: 1px solid #2a2a2a; align-items: center; background: var(--bg); cursor: pointer; gap: 5px; }
+        /* Updated Grid to accommodate Star */
+        .list-row { display: grid; grid-template-columns: 25px 22px 1fr auto; padding: 3px 5px; border-bottom: 1px solid #2a2a2a; align-items: center; background: var(--bg); cursor: pointer; gap: 5px; }
         .list-row:hover { background: #222; }
+        
+        /* NEW STYLES FOR HIGHLIGHTS */
+        .list-row.sold-out { background: var(--danger); border-bottom-color: #991b1b; }
+        .list-row.sold-out .item-name { color: var(--danger-text); }
+        .list-row.starred { background: var(--highlight-bg); border-bottom-color: var(--highlight-border); }
+        
+        .star-btn { font-size: 1.1rem; color: #444; cursor: pointer; text-align: center; background:none; border:none; padding:0; }
+        .star-btn.active { color: #fbbf24; }
+
         .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.6rem; border: 1px solid #333; border-radius: 3px; height: 14px; line-height: 14px; background: #151515; }
+        .list-row.sold-out .qty-box { color: #888; border-color: #555; background: #333; }
+
         .item-info { display: flex; flex-direction: column; gap: 0px; overflow: hidden; min-width: 0; }
         .item-name { font-weight: 600; color: #ddd; font-size: 0.55rem; line-height: 1.1; word-wrap: break-word; white-space: normal; }
         .meta-line { font-size: 0.5rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; margin-top: 1px;}
+        .list-row.sold-out .meta-line { color: #fca5a5; } /* Lighter red text */
+        
         .size-badge { color: #fbbf24; font-weight: normal; border: 1px solid #444; padding: 0 2px; border-radius: 2px; font-size: 0.5rem; }
         .icon-badge { font-size: 0.55rem; opacity: 0.7; }
         .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 2px 4px; font-size: 0.55rem; cursor: pointer; border-radius: 3px; }
@@ -130,7 +146,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V74</span></h1>
+            <h1>LagerManager <span style="color:var(--primary); font-size:0.7rem;">V75</span></h1>
             <button class="header-btn" onclick="openSettings()">Optionen</button>
         </div>
         <div class="nav-tabs">
@@ -146,7 +162,7 @@
                 <div class="stat-item"><span class="stat-lbl">Gewinn</span><span id="statProfit" class="stat-val text-green">0 €</span></div>
             </div>
             <div class="search-wrapper">
-                <input type="text" id="searchInput" class="search-input" placeholder="Suchen..." onkeyup="renderCurrentView()">
+                <input type="text" id="searchInput" class="search-input" placeholder="Suchen (Name, ArtNr, Ort, Größe)..." onkeyup="renderCurrentView()">
                 <button id="clearSearchBtn" class="search-clear" onclick="clearSearch()">✕</button>
             </div>
         </div>
@@ -311,7 +327,11 @@
                         </label>
                         <div class="action-btn" onclick="exportCSV()">
                             <span class="action-icon">📊</span>
-                            <span class="action-text">CSV-Export (Excel)</span>
+                            <span class="action-text">Verkauf-Export (CSV)</span>
+                        </div>
+                        <div class="action-btn" onclick="exportInventoryCSV()">
+                            <span class="action-icon">📦</span>
+                            <span class="action-text">Lagerbestand exportieren (CSV)</span>
                         </div>
                         <div class="action-btn" onclick="printInventory()">
                             <span class="action-icon">🖨️</span>
@@ -432,24 +452,50 @@
         function renderInventory(term) {
             const list = document.getElementById('itemList');
             list.innerHTML = '';
+            // ERWEITERTE SUCHE: Auch Ort und Größe
             const filtered = [...inventory].reverse().filter(i => 
-                i.name.toLowerCase().includes(term) || (i.artnr && i.artnr.toLowerCase().includes(term))
+                i.name.toLowerCase().includes(term) || 
+                (i.artnr && i.artnr.toLowerCase().includes(term)) ||
+                (i.ort && i.ort.toLowerCase().includes(term)) ||
+                (i.groesse && i.groesse.toLowerCase().includes(term))
             );
             filtered.forEach(i => {
                 const div = document.createElement('div');
-                div.className = 'list-row';
-                div.onclick = (e) => { if(e.target.tagName !== 'BUTTON') openEditModal(i.id); };
+                
+                // Klassen Logik: Ausverkauft vs Markiert
+                let classes = 'list-row';
+                let isSoldOut = i.menge <= 0;
+                
+                if(isSoldOut) classes += ' sold-out';
+                else if(i.starred) classes += ' starred';
+                
+                div.className = classes;
+                div.onclick = (e) => { 
+                    // Prevent star click from opening modal
+                    if(e.target.tagName !== 'BUTTON' && !e.target.classList.contains('star-btn')) openEditModal(i.id); 
+                };
+
                 const art = i.artnr || '';
                 const sizeStr = i.groesse ? `<span class="size-badge">Gr: ${i.groesse}</span>` : '';
                 let icons = "";
                 if(i.bild) icons += '<span class="icon-badge">🖼️</span> ';
                 if(i.notiz) icons += '<span class="icon-badge">📝</span>';
 
+                // Datum formatieren
+                let soldOutText = "";
+                if(isSoldOut && i.soldOutDate) {
+                    soldOutText = ` | Ausverkauft: ${formatDate(i.soldOutDate)}`;
+                }
+
                 div.innerHTML = `
+                    <button class="star-btn ${i.starred ? 'active' : ''}" onclick="toggleStar(event, ${i.id})">★</button>
                     <div class="qty-box">${i.menge}</div>
                     <div class="item-info">
                         <span class="item-name">${i.name}</span>
-                        <span class="meta-line">${art} ${sizeStr} <span style="margin-left:auto;">${icons} ${i.loc || ''}</span></span>
+                        <span class="meta-line">
+                            ${art} ${sizeStr}${soldOutText} 
+                            <span style="margin-left:auto;">${icons} ${i.loc || i.ort || ''}</span>
+                        </span>
                     </div>
                     <div class="item-actions">
                         <button class="btn-action" onclick="openSellModal(event, ${i.id})">VERKAUF</button>
@@ -457,6 +503,14 @@
                 `;
                 list.appendChild(div);
             });
+        }
+        
+        async function toggleStar(e, id) {
+            e.stopPropagation(); // Verhindert Öffnen des Modals
+            const item = inventory.find(x => x.id === id);
+            item.starred = !item.starred;
+            await dbOp('inventory', 'put', item);
+            renderCurrentView();
         }
 
         function renderSales(term) {
@@ -616,10 +670,11 @@
 
         async function saveItem() {
             const id = document.getElementById('editId').value;
+            const menge = parseInt(document.getElementById('inpMenge').value) || 0;
             const obj = {
                 artnr: document.getElementById('inpArtnr').value,
                 name: document.getElementById('inpName').value,
-                menge: parseInt(document.getElementById('inpMenge').value) || 0,
+                menge: menge,
                 preis: parseFloat(document.getElementById('inpPreis').value) || 0,
                 groesse: document.getElementById('inpGroesse').value,
                 datum: document.getElementById('inpDatum').value,
@@ -628,8 +683,21 @@
                 notiz: document.getElementById('inpNotiz').value,
                 bild: document.getElementById('inpBild').value
             };
-            if(id) { obj.id = parseInt(id); await dbOp('inventory', 'put', obj); }
-            else { await dbOp('inventory', 'add', obj); }
+            
+            // Bestehendes Item holen um Star/SoldOut Status nicht zu verlieren
+            if(id) { 
+                const existing = inventory.find(x => x.id === parseInt(id));
+                if(existing) {
+                    obj.id = parseInt(id);
+                    obj.starred = existing.starred || false;
+                    obj.soldOutDate = existing.soldOutDate || null;
+                    // Wenn Menge wieder > 0, SoldOut entfernen
+                    if(menge > 0) obj.soldOutDate = null;
+                }
+                await dbOp('inventory', 'put', obj); 
+            } else { 
+                await dbOp('inventory', 'add', obj); 
+            }
             await loadData(); closeModals(); triggerAutoBackup();
         }
 
@@ -733,7 +801,14 @@
             for(let i = 0; i < basket.length; i++) {
                 const item = basket[i];
                 const dbItem = inventory.find(x => x.id === item.id);
-                if(dbItem) { dbItem.menge -= item.qty; await dbOp('inventory', 'put', dbItem); }
+                if(dbItem) { 
+                    dbItem.menge -= item.qty; 
+                    // Wenn Menge 0 wird, SoldOut Datum setzen
+                    if(dbItem.menge <= 0) {
+                        dbItem.soldOutDate = new Date().toISOString().split('T')[0];
+                    }
+                    await dbOp('inventory', 'put', dbItem); 
+                }
                 
                 await dbOp('sales', 'add', {
                     invoiceNr: inv, platform: plat, date: date, name: item.name, artnr: item.artnr,
@@ -790,7 +865,12 @@
                     if(diff !== 0) {
                          const invItem = inventory.find(x => x.artnr === item.artnr);
                          if(diff > 0 && invItem && invItem.menge < diff) { alert("Nicht genug Lagerbestand!"); return; }
-                         if(invItem) { invItem.menge -= diff; await dbOp('inventory', 'put', invItem); }
+                         if(invItem) { 
+                             invItem.menge -= diff; 
+                             // Logik auch hier: Wenn storno und menge > 0 wird, soldOut weg
+                             if(invItem.menge > 0) invItem.soldOutDate = null;
+                             await dbOp('inventory', 'put', invItem); 
+                         }
                          item.qty = newQ;
                     }
                     item.total = parseFloat(document.getElementById('editSalePrice').value);
@@ -812,7 +892,11 @@
             
             if(restore) {
                 let it = inventory.find(x => x.artnr === s.artnr);
-                if(it) { it.menge += s.qty; await dbOp('inventory', 'put', it); }
+                if(it) { 
+                    it.menge += s.qty; 
+                    if(it.menge > 0) it.soldOutDate = null;
+                    await dbOp('inventory', 'put', it); 
+                }
             }
             await dbOp('sales', 'delete', id);
             await loadData(); closeModals(); triggerAutoBackup();
@@ -841,14 +925,10 @@
             const w = window.open('','_blank'); w.document.write(h); w.document.close();
         }
 
-        // CSV EXPORT MIT ALLEN DETAILS + BOM für Excel
+        // CSV EXPORT VERKÄUFE
         function exportCSV() {
             let csvContent = "Rechnungsnummer;Plattform;Wann;Menge;Name Artikel;EK (Stk);VK (Gesamt);Versand;Gebühren;Gewinn\n";
-            let grandTotalVK = 0; 
-            let grandTotalEK = 0;
-            let grandTotalShip = 0;
-            let grandTotalFees = 0;
-            let grandTotalProfit = 0;
+            let grandTotalVK = 0; let grandTotalEK = 0; let grandTotalShip = 0; let grandTotalFees = 0; let grandTotalProfit = 0;
 
             salesLog.forEach(s => {
                 const buyPrice = s.buyPrice || 0;
@@ -858,41 +938,50 @@
                 const fees = s.fees || 0;
                 const profit = revenue - ship - fees - totalBuy;
                 
-                // Accumulate ALL Columns
-                grandTotalEK += totalBuy;
-                grandTotalVK += revenue;
-                grandTotalShip += ship;
-                grandTotalFees += fees;
-                grandTotalProfit += profit;
-
+                grandTotalEK += totalBuy; grandTotalVK += revenue; grandTotalShip += ship; grandTotalFees += fees; grandTotalProfit += profit;
                 const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
 
                 let row = [
-                    s.invoiceNr,
-                    s.platform,
-                    formatDate(s.date), 
-                    s.qty,
-                    `"${s.name.replace(/"/g, '""')}"`, 
-                    fmt(buyPrice),
-                    fmt(revenue),
-                    fmt(ship),
-                    fmt(fees),
-                    fmt(profit)
+                    s.invoiceNr, s.platform, formatDate(s.date), s.qty, `"${s.name.replace(/"/g, '""')}"`, 
+                    fmt(buyPrice), fmt(revenue), fmt(ship), fmt(fees), fmt(profit)
                 ].join(';');
-
                 csvContent += row + "\n";
             });
 
-            // Add Total Row with SUMS for ALL money columns
             const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
-            
-            // Die leeren Semikolons entsprechen den Spalten: Nr, Plattform, Wann, Menge, Name
             csvContent += `;;;;;${fmt(grandTotalEK)};${fmt(grandTotalVK)};${fmt(grandTotalShip)};${fmt(grandTotalFees)};${fmt(grandTotalProfit)}\n`;
 
             const bom = "\uFEFF";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`; 
+            a.click();
+        }
+        
+        // CSV EXPORT LAGER (INVENTORY)
+        function exportInventoryCSV() {
+            let csvContent = "ArtNr;Name;Menge;Größe;Preis (EK);Ort;Kaufdatum;Zustand;Notiz\n";
+            
+            inventory.forEach(i => {
+                const fmt = (num) => (num || 0).toFixed(2).replace('.', ',');
+                let row = [
+                    i.artnr || "",
+                    `"${(i.name || "").replace(/"/g, '""')}"`,
+                    i.menge || 0,
+                    i.groesse || "",
+                    fmt(i.preis),
+                    i.ort || "",
+                    formatDate(i.datum),
+                    i.zustand || "",
+                    `"${(i.notiz || "").replace(/"/g, '""')}"`
+                ].join(';');
+                csvContent += row + "\n";
+            });
+
+            const bom = "\uFEFF";
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Lagerbestand_${new Date().toISOString().split('T')[0]}.csv`; 
             a.click();
         }
 
