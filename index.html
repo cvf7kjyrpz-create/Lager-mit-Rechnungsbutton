@@ -83,35 +83,13 @@
         /* SALES LIST */
         .sale-group { margin-bottom: 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
         .sale-header { padding: 4px 8px; background: #222; display: flex; justify-content: space-between; font-size: 0.7rem; color: #ccc; font-weight: bold; }
-        
-        /* Neuer Style für Storno-Header */
-        .sale-header.storno-bg {
-            background: #2a1010;
-            border-bottom: 1px solid #421;
-        }
-        .storno-label-main {
-            color: #ff5555;
-            margin-left: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
+        .sale-header.storno-bg { background: #2a1010; border-bottom: 1px solid #421; }
+        .storno-label-main { color: #ff5555; margin-left: 10px; font-weight: 800; letter-spacing: 0.5px; }
 
         .sale-row { padding: 5px 8px; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: flex-start; font-size: 0.7rem; }
-        
-        .sale-row.storno-item { 
-            background: #2a1111; 
-            color: #ff9999; 
-        }
-        .storno-text {
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-        .storno-badge {
-            color: #ff5555;
-            font-weight: bold;
-            margin-left: 5px;
-            font-size: 0.65rem;
-        }
+        .sale-row.storno-item { background: #2a1111; color: #ff9999; }
+        .storno-text { text-decoration: line-through; opacity: 0.7; }
+        .storno-badge { color: #ff5555; font-weight: bold; margin-left: 5px; font-size: 0.65rem; }
 
         .sale-name-col { flex-grow: 1; margin-right: 8px; white-space: normal; word-break: break-word; line-height: 1.2; color: #ddd; }
         .sale-footer { padding: 4px 8px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; color: #ccc; font-size: 0.7rem; font-weight: bold; }
@@ -228,7 +206,7 @@
                     </div>
                     <div class="row-2">
                         <div><label>Kaufdatum</label><input type="date" id="inpDatum"></div>
-                        <div><label>Ort</label><input type="text" id="inpOrt"></div>
+                        <div><label>Kauf-Ort</label><input type="text" id="inpOrt"></div>
                     </div>
                     <div><label>Zustand</label><select id="inpZustand"><option>Neu</option><option>Wie neu</option><option>Gebraucht</option></select></div>
                     <div><label>Notiz</label><textarea id="inpNotiz"></textarea></div>
@@ -330,7 +308,7 @@
 
                         <div class="action-btn" onclick="exportCSV()">
                             <span class="action-icon">📊</span>
-                            <span class="action-text">CSV-Export (für Excel/Steuer)</span>
+                            <span class="action-text">CSV-Export (Excel/Steuer)</span>
                         </div>
                         <div class="action-btn" onclick="printInventory()">
                             <span class="action-icon">🖨️</span>
@@ -553,8 +531,6 @@
 
             Object.keys(groups).sort().reverse().forEach(inv => {
                 const g = groups[inv];
-                
-                // PRÜFEN OB STORNO VORLIEGT (in dieser Gruppe)
                 const hasStorno = g.items.some(x => x.isStorno);
                 
                 let totalBuyPrice = 0;
@@ -572,6 +548,7 @@
                     const rowClass = isStorno ? 'sale-row storno-item' : 'sale-row';
                     const nameClass = isStorno ? 'sale-name-col storno-text' : 'sale-name-col';
                     const badge = isStorno ? '<span class="storno-badge">(STORNO)</span>' : '';
+                    
                     const stornoBtn = isStorno 
                         ? '' 
                         : `<button class="btn-mini-icon btn-del-icon" title="Storno" onclick="markSaleAsStorno(${it.id})">↩️</button>`;
@@ -588,8 +565,6 @@
 
                 const profit = g.total - totalShipping - totalFees - totalBuyPrice;
                 const profitClass = profit >= 0 ? 'text-green' : 'text-red';
-                
-                // LABEL FÜR DEN HEADER
                 const stornoHeaderLabel = hasStorno ? '<span class="storno-label-main">(STORNO)</span>' : '';
                 const headerClass = hasStorno ? 'sale-header storno-bg' : 'sale-header';
 
@@ -738,7 +713,10 @@
         }
 
         function exportCSV() {
-            let csv = "Datum;RechnungsNr;Plattform;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn;Status\n";
+            // SPALTE STATUS IST JETZT GANZ VORNE
+            // KAUF-ORT WURDE EINGEFÜGT
+            let csv = "Status;Datum;RechnungsNr;Plattform;KaufOrt;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
+            
             salesLog.forEach(s => {
                 const buy = s.buyPrice || 0;
                 const sell = s.total || 0;
@@ -746,9 +724,20 @@
                 const fees = s.fees || 0;
                 const profit = sell - ship - fees - (buy * (s.qty || 1));
                 const f = (n) => n.toFixed(2).replace('.', ',');
-                const status = s.isStorno ? 'STORNO' : 'OK';
-                csv += `${s.date};${s.invoiceNr};${s.platform};${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)};${status}\n`;
+                
+                // STATUS TEXT (leer wenn ok)
+                const status = s.isStorno ? 'STORNO' : '';
+                
+                // KAUF-ORT FINDEN (Versuchen aus Sales zu holen, sonst aus Inventar suchen)
+                let sourcingLoc = s.sourcingLoc || '';
+                if(!sourcingLoc) {
+                    const originalItem = inventory.find(i => i.artnr === s.artnr);
+                    if(originalItem) sourcingLoc = originalItem.ort || '';
+                }
+
+                csv += `${status};${s.date};${s.invoiceNr};${s.platform};"${sourcingLoc}";${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)}\n`;
             });
+            
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`;
@@ -934,7 +923,9 @@
                     fees: (i === 0 ? fees : 0),
                     total: (item.priceTotal || 0) + (i === 0 ? ship : 0), 
                     invoiceImg: useImg,
-                    isStorno: false 
+                    isStorno: false,
+                    // HIER WIRD DER KAUF-ORT GESPEICHERT:
+                    sourcingLoc: dbItem ? dbItem.ort : ''
                 });
             }
             await loadData(); closeModals(); switchTab('sales');
