@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <title>LagerManager</title>
+    <title>LagerManager V42</title>
     <style>
         :root {
             --bg: #1e1e1e; 
@@ -22,141 +22,633 @@
             --profit: #d97706; 
             color-scheme: dark; 
         }
+
         body { 
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
             color: var(--text); 
             margin: 0; 
             padding-bottom: 80px; 
-            font-size: 13px; 
+            font-size: 14px; 
             overscroll-behavior-y: none;
         }
 
-        /* --- HEADER --- */
-        .app-header { background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top); }
-        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1a1a1a; }
-        
-        .status-container { display:flex; align-items:center; gap:10px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); display: inline-block; box-shadow: 0 0 5px var(--success); transition: 0.3s; }
-        .status-dot.unsafe { background: var(--danger); box-shadow: 0 0 5px var(--danger); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* --- HEADER & NAVIGATION --- */
+        .app-header { 
+            background: var(--panel); 
+            border-bottom: 1px solid var(--border); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            padding-top: env(safe-area-inset-top); 
+        }
 
-        h1 { margin: 0; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
-        .header-btn { background: transparent; border: 1px solid var(--border); color: #888; padding: 3px 8px; font-size: 0.7rem; cursor: pointer; border-radius: 2px; text-transform: uppercase; }
+        .header-top { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 15px; 
+            background: #1a1a1a; 
+        }
+        
+        .status-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+
+        .status-dot { 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            background: var(--success); 
+            display: inline-block; 
+            box-shadow: 0 0 5px var(--success); 
+            transition: 0.3s; 
+        }
+        .status-dot.unsafe { 
+            background: var(--danger); 
+            box-shadow: 0 0 5px var(--danger); 
+            animation: pulse 2s infinite; 
+        }
+
+        @keyframes pulse { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.5; } 
+            100% { opacity: 1; } 
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            color: #fff; 
+        }
+
+        .header-btn { 
+            background: transparent; 
+            border: 1px solid var(--border); 
+            color: #888; 
+            padding: 5px 10px; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            text-transform: uppercase; 
+        }
 
         /* TABS */
-        .nav-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel); }
-        .nav-tab { flex: 1; background: transparent; border: none; padding: 8px; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.7rem; transition: 0.2s; }
-        .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(59, 130, 246, 0.05); color: #fff; }
+        .nav-tabs { 
+            display: flex; 
+            border-bottom: 1px solid var(--border); 
+            background: var(--panel); 
+        }
+        
+        .nav-tab { 
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            padding: 12px; 
+            color: #666; 
+            font-weight: 600; 
+            cursor: pointer; 
+            border-bottom: 2px solid transparent; 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            transition: 0.2s; 
+        }
+        
+        .nav-tab.active { 
+            color: var(--primary); 
+            border-bottom-color: var(--primary); 
+            background: rgba(59, 130, 246, 0.05); 
+            color: #fff; 
+        }
 
-        /* SEARCH & STATS */
-        .toolbar { padding: 6px 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-        .search-wrapper { position: relative; width: 100%; }
-        .search-input { width: 100%; height: 28px; background: #111; border: 1px solid var(--border); border-radius: 2px; padding: 0 30px 0 10px; color: #ccc; box-sizing: border-box; font-size: 0.75rem; }
-        .search-clear { position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: none; border: none; color: #777; cursor: pointer; display: none; }
+        /* TOOLBAR & SEARCH */
+        .toolbar { 
+            padding: 8px 12px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+        }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-        .stat-item { background: var(--panel); padding: 3px; text-align: center; }
-        .stat-lbl { font-size: 0.55rem; color: #666; text-transform: uppercase; }
-        .stat-val { font-size: 0.65rem; font-weight: bold; display: block; color: #fff; }
+        .search-wrapper { 
+            position: relative; 
+            width: 100%; 
+        }
+
+        .search-input { 
+            width: 100%; 
+            height: 35px; 
+            background: #111; 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            padding: 0 35px 0 10px; 
+            color: #ccc; 
+            box-sizing: border-box; 
+            font-size: 0.9rem; 
+        }
+
+        .search-clear { 
+            position: absolute; 
+            right: 0; 
+            top: 0; 
+            bottom: 0; 
+            width: 35px; 
+            background: none; 
+            border: none; 
+            color: #777; 
+            cursor: pointer; 
+            display: none; 
+            font-size: 1.2rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 1px; 
+            background: var(--border); 
+            border: 1px solid var(--border); 
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-item { 
+            background: var(--panel); 
+            padding: 6px 2px; 
+            text-align: center; 
+        }
+
+        .stat-lbl { 
+            font-size: 0.6rem; 
+            color: #888; 
+            text-transform: uppercase; 
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .stat-val { 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            display: block; 
+            color: #fff; 
+        }
+
         .text-green { color: #34d399 !important; } 
 
         /* VIEWS */
         #viewInventory, #viewSales { display: none; }
         #viewInventory.active, #viewSales.active { display: block; }
 
-        /* LISTE ITEMS */
-        .list-row { display: grid; grid-template-columns: 30px 1fr auto; padding: 6px 8px; border-bottom: 1px solid var(--border); align-items: flex-start; background: var(--bg); cursor: pointer; gap: 8px; }
+        /* LISTE ITEMS (INVENTORY) */
+        .list-row { 
+            display: grid; 
+            grid-template-columns: 40px 1fr auto; 
+            padding: 10px 12px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: flex-start; 
+            background: var(--bg); 
+            cursor: pointer; 
+            gap: 12px; 
+        }
+
         .list-row:hover { background: #222; }
-        .list-row.marked { border-left: 2px solid var(--profit); background: #221e10; }
-        .qty-box { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.75rem; padding-top: 2px; }
-        .item-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
-        .item-name { font-weight: 700; color: #ddd; font-size: 0.7rem; line-height: 1.2; white-space: normal; word-break: break-word; }
-        .meta-container { display: flex; align-items: center; width: 100%; margin-top: 1px; }
-        .meta-scroller { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.6rem; color: #666; margin-right: 5px; }
-        .meta-icons { flex-shrink: 0; display: flex; gap: 4px; }
-        .icon-small { font-size: 0.65rem; opacity: 0.9; }
-        .item-actions { text-align: right; }
-        .price-tag { font-weight: 500; display: block; margin-bottom: 2px; color: #999; font-size: 0.7rem; }
-        .btn-action { background: #222; border: 1px solid #333; color: #aaa; padding: 2px 5px; font-size: 0.6rem; cursor: pointer; border-radius: 2px; }
+        
+        .list-row.marked { 
+            border-left: 3px solid var(--profit); 
+            background: #221e10; 
+        }
 
-        /* SALES LIST */
-        .sale-group { margin-bottom: 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg); }
-        .sale-header { padding: 4px 8px; background: #222; display: flex; justify-content: space-between; font-size: 0.7rem; color: #ccc; font-weight: bold; }
-        .sale-header.storno-bg { background: #2a1010; border-bottom: 1px solid #421; }
-        .storno-label-main { color: #ff5555; margin-left: 10px; font-weight: 800; letter-spacing: 0.5px; }
+        .qty-box { 
+            color: var(--primary); 
+            font-weight: bold; 
+            text-align: center; 
+            font-size: 1.1rem; 
+            padding-top: 2px; 
+        }
 
-        .sale-row { padding: 5px 8px; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: flex-start; font-size: 0.7rem; }
-        .sale-row.storno-item { background: #2a1111; color: #ff9999; }
-        .storno-text { text-decoration: line-through; opacity: 0.7; }
-        .storno-badge { color: #ff5555; font-weight: bold; margin-left: 5px; font-size: 0.65rem; }
+        .item-info { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px; 
+            overflow: hidden; 
+            min-width: 0; 
+        }
 
-        .sale-name-col { flex-grow: 1; margin-right: 8px; white-space: normal; word-break: break-word; line-height: 1.2; color: #ddd; }
-        .sale-footer { padding: 4px 8px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; color: #ccc; font-size: 0.7rem; font-weight: bold; }
-        .btn-mini-icon { background: none; border: 1px solid #333; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; margin-left: 3px; font-size: 0.75rem; color: #888; }
+        .item-name { 
+            font-weight: 700; 
+            color: #ddd; 
+            font-size: 0.95rem; 
+            line-height: 1.3; 
+            white-space: normal; 
+            word-break: break-word; 
+        }
+        
+        /* NEU: SIZE BADGE STYLE */
+        .size-badge {
+            display: inline-block;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        /* NEU: SOLD OUT MSG STYLE */
+        .sold-out-msg { 
+            color: var(--danger); 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            display: block; 
+            margin-top: 4px; 
+            text-transform: uppercase;
+        }
+
+        .meta-container { 
+            display: flex; 
+            align-items: center; 
+            width: 100%; 
+            margin-top: 2px; 
+            flex-wrap: wrap;
+        }
+
+        .meta-scroller { 
+            flex: 1; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-size: 0.75rem; 
+            color: #888; 
+            margin-right: 5px; 
+        }
+
+        .meta-icons { 
+            flex-shrink: 0; 
+            display: flex; 
+            gap: 6px; 
+        }
+
+        .icon-small { font-size: 0.8rem; opacity: 0.9; }
+
+        .item-actions { 
+            text-align: right; 
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .price-tag { 
+            font-weight: 600; 
+            display: block; 
+            color: #aaa; 
+            font-size: 0.85rem; 
+        }
+
+        .btn-action { 
+            background: #252525; 
+            border: 1px solid #444; 
+            color: #ccc; 
+            padding: 6px 10px; 
+            font-size: 0.7rem; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* SALES LIST STYLES */
+        .sale-group { 
+            margin-bottom: 12px; 
+            border-top: 1px solid var(--border); 
+            border-bottom: 1px solid var(--border); 
+            background: var(--bg); 
+        }
+
+        .sale-header { 
+            padding: 8px 12px; 
+            background: #222; 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.8rem; 
+            color: #ccc; 
+            font-weight: bold; 
+            align-items: center;
+        }
+        
+        /* STORNO HEADER STYLE */
+        .sale-header.storno-bg { 
+            background: #2a1010; 
+            border-bottom: 1px solid #421; 
+        }
+
+        .storno-label-main { 
+            color: #ff5555; 
+            margin-left: 8px; 
+            font-weight: 800; 
+            letter-spacing: 0.5px;
+            font-size: 0.7rem;
+        }
+
+        .sale-row { 
+            padding: 8px 12px; 
+            border-top: 1px solid #2a2a2a; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            font-size: 0.85rem; 
+        }
+        
+        .sale-row.storno-item { 
+            background: #2a1111; 
+            color: #ff9999; 
+        }
+
+        .storno-text { 
+            text-decoration: line-through; 
+            opacity: 0.7; 
+        }
+
+        .storno-badge { 
+            color: #ff5555; 
+            font-weight: bold; 
+            margin-left: 5px; 
+            font-size: 0.7rem; 
+        }
+
+        .sale-name-col { 
+            flex-grow: 1; 
+            margin-right: 10px; 
+            white-space: normal; 
+            word-break: break-word; 
+            line-height: 1.3; 
+            color: #ddd; 
+        }
+
+        .sale-footer { 
+            padding: 8px 12px; 
+            background: #1a1a1a; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: #ccc; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+        }
+
+        /* MINI ICONS BUTTONS */
+        .btn-mini-icon { 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            width: 28px; 
+            height: 28px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin-left: 6px; 
+            font-size: 0.9rem; 
+            color: #bbb; 
+        }
         .btn-mini-icon:hover { background: #333; color: #fff; }
         .btn-del-icon { color: #d66; border-color: #522; }
         .btn-copy-icon { color: #3b82f6; border-color: #1e3a8a; }
 
-        /* FAB */
-        .fab { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: #fff; width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; padding-bottom: 4px;}
+        /* FLOATING ACTION BUTTON */
+        .fab { 
+            position: fixed; 
+            bottom: 25px; 
+            right: 25px; 
+            background: var(--primary); 
+            color: #fff; 
+            width: 56px; 
+            height: 56px; 
+            border-radius: 50%; 
+            border: none; 
+            font-size: 32px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 90; 
+            padding-bottom: 4px;
+            transition: transform 0.2s;
+        }
+        .fab:active { transform: scale(0.95); }
 
-        /* MODALS */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding-bottom: 20px;}
-        .modal-box { background: var(--panel); width: 100%; max-width: 450px; border: 1px solid var(--border); display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border-radius: 8px; overflow: hidden; }
-        .modal-header { padding: 12px; background: #222; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 0.9rem; color: #eee; }
-        .modal-body { padding: 15px; overflow-y: auto; }
-        .modal-footer { padding: 12px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #222; }
+        /* MODALS (GENERAL) */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 200; 
+            align-items: center; 
+            justify-content: center; 
+            padding-bottom: 20px;
+            backdrop-filter: blur(2px);
+        }
 
-        /* INPUTS */
-        .form-grid { display: grid; gap: 8px; }
-        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        label { display: block; font-size: 0.7rem; color: #888; margin-bottom: 2px; text-transform: uppercase; }
-        input, select, textarea { width: 100%; height: 35px; background: #111; border: 1px solid #444; color: #ddd; padding: 0 8px; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box;}
-        textarea { height: 60px; padding: 6px; }
-        .btn { border: none; padding: 10px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; border-radius: 4px; }
+        .modal-box { 
+            background: var(--panel); 
+            width: 95%; 
+            max-width: 500px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            max-height: 90vh; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
+            border-radius: 10px; 
+            overflow: hidden; 
+        }
+
+        .modal-header { 
+            padding: 15px; 
+            background: #222; 
+            border-bottom: 1px solid var(--border); 
+            font-weight: bold; 
+            font-size: 1rem; 
+            color: #eee; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-body { 
+            padding: 15px; 
+            overflow-y: auto; 
+        }
+
+        .modal-footer { 
+            padding: 15px; 
+            border-top: 1px solid var(--border); 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            background: #222; 
+        }
+
+        /* FORMS & INPUTS */
+        .form-grid { display: grid; gap: 12px; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        label { 
+            display: block; 
+            font-size: 0.75rem; 
+            color: #999; 
+            margin-bottom: 4px; 
+            text-transform: uppercase; 
+            font-weight: 600;
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            height: 40px; 
+            background: #111; 
+            border: 1px solid #444; 
+            color: #ddd; 
+            padding: 0 10px; 
+            border-radius: 6px; 
+            font-size: 0.95rem; 
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        textarea { height: 80px; padding: 8px; resize: none; font-family: inherit; }
+
+        /* BUTTONS STANDARD */
+        .btn { 
+            border: none; 
+            padding: 12px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            border-radius: 6px; 
+            transition: background 0.2s;
+        }
+        
         .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #2563eb; }
+        
         .btn-secondary { background: #333; color: #ccc; }
+        .btn-secondary:hover { background: #444; color: #fff; }
+        
         .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #991b1b; }
+        
         .btn-copy { background: #444; color: #fff; border: 1px solid #555; }
-        
-        /* SETTINGS */
-        .settings-group { background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
-        .settings-title { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.5px; }
-        .switch-row { display: flex; justify-content: space-between; align-items: center; }
-        .switch-label { font-size: 0.8rem; color: #ddd; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #444; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(18px); }
-        .action-list { display: flex; flex-direction: column; gap: 8px; }
-        .action-btn { display: flex; align-items: center; justify-content: space-between; background: #222; border: 1px solid #333; padding: 12px; border-radius: 4px; color: #ddd; cursor: pointer; font-size: 0.85rem; text-decoration: none; transition: 0.2s; box-sizing: border-box; }
-        .action-btn:hover { background: #2a2a2a; border-color: #555; color: #fff; }
-        .action-icon { font-size: 1.2rem; }
-        .action-text { flex-grow: 1; text-align: left; margin-left: 10px; }
+        .btn-copy:hover { background: #555; }
 
-        .basket-item { background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 4px; border-radius: 4px; }
-        .basket-header { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; color: #ddd;}
-        #searchDropdown { display: none; background: #222; border: 1px solid #444; margin-top: 2px; max-height: 180px; overflow-y: auto; position: absolute; width: 100%; z-index: 50; }
-        .search-res { padding: 8px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.8rem; }
+        /* SETTINGS LIST */
+        .action-list { display: flex; flex-direction: column; gap: 10px; }
+        .action-btn { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: #222; 
+            border: 1px solid #333; 
+            padding: 15px; 
+            border-radius: 6px; 
+            color: #ddd; 
+            cursor: pointer; 
+            font-size: 0.9rem; 
+            text-decoration: none; 
+            transition: 0.2s; 
+            box-sizing: border-box; 
+        }
+        .action-btn:hover { background: #2a2a2a; border-color: #555; color: #fff; }
+        .action-text { flex-grow: 1; text-align: left; }
+
+        /* BASKET (SELL MODAL) */
+        .basket-item { 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            padding: 10px; 
+            margin-bottom: 6px; 
+            border-radius: 6px; 
+        }
+        .basket-header { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            margin-bottom: 6px; 
+            color: #ddd;
+        }
+
+        /* SEARCH DROPDOWN */
+        #searchDropdown { 
+            display: none; 
+            background: #222; 
+            border: 1px solid #444; 
+            margin-top: 2px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            position: absolute; 
+            width: 100%; 
+            z-index: 50; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .search-res { 
+            padding: 10px; 
+            border-bottom: 1px solid #333; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+        }
+        .search-res:hover { background: #333; }
         
+        /* IMAGE VIEWER */
         #modalImageViewer { z-index: 300; background: #000; }
         #fullImage { max-width: 100%; max-height: 90vh; object-fit: contain; }
-        .close-img { position: absolute; top: 30px; right: 20px; color: #fff; background: #333; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+        .close-img { 
+            position: absolute; 
+            top: 30px; 
+            right: 20px; 
+            color: #fff; 
+            background: rgba(50,50,50,0.5); 
+            border: none; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-size: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
 
-        .delete-choice-btn { text-align: center; padding: 12px; background: #333; border: 1px solid #444; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-        .delete-choice-btn:hover { background: #444; border-color: #666; }
-        .del-title { display: block; font-weight: bold; font-size: 0.85rem; color: #eee; margin-bottom: 2px; }
-        .del-desc { display: block; font-size: 0.65rem; color: #888; }
+        /* SWITCH FOR SETTINGS */
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #222; border-radius: 6px; border: 1px solid #333; }
+        .switch-label { font-size: 0.9rem; color: #ddd; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
     </style>
 </head>
 <body>
 
     <div class="app-header">
         <div class="header-top">
-            <h1>Lagerverwaltung</h1>
+            <h1>LagerManager V42</h1>
             <div class="status-container">
                 <div id="statusIndicator" class="status-dot" title="Datenschutz Status"></div>
                 <button class="header-btn" onclick="openSettings()">Optionen</button>
@@ -214,7 +706,7 @@
                          <label>Bild (wird automatisch komprimiert)</label>
                          <input type="file" id="inpFile" accept="image/*" onchange="handleImageCompressed(this, 'inpBild', 'imgPreview')">
                          <input type="hidden" id="inpBild">
-                         <img id="imgPreview" style="width:100%; margin-top:8px; border:1px solid #444; display:none;">
+                         <img id="imgPreview" style="width:100%; margin-top:8px; border:1px solid #444; display:none; border-radius:6px;">
                     </div>
                 </div>
             </div>
@@ -230,11 +722,11 @@
         <div class="modal-box">
             <div class="modal-header">Verkauf</div>
             <div class="modal-body">
-                <div style="background:#222; padding:8px; border:1px solid #333; margin-bottom:10px;">
-                    <div><label>Rg-Nr.</label><input type="text" id="sellInvoiceNr"></div>
-                    <div class="row-2" style="margin-top:8px;">
+                <div style="background:#222; padding:10px; border:1px solid #333; border-radius:6px; margin-bottom:15px;">
+                    <div><label>Rechnungs-Nr.</label><input type="text" id="sellInvoiceNr"></div>
+                    <div class="row-2" style="margin-top:10px;">
                         <div>
-                            <label>Plattform (Erster Buchstabe = Prefix)</label>
+                            <label>Plattform</label>
                             <input list="platformOptions" id="sellPlatform" oninput="updateInvoicePreview()" placeholder="z.B. eBay">
                             <datalist id="platformOptions">
                                 <option value="eBay">
@@ -246,31 +738,37 @@
                         </div>
                         <div><label>Datum</label><input type="date" id="sellDate" onchange="updateInvoicePreview()"></div>
                     </div>
+                    <div style="margin-top:10px;">
+                        <label style="color:#3b82f6;">Kunden-Adresse (für RechnungApp)</label>
+                        <textarea id="sellAddress" placeholder="Name&#10;Straße&#10;Ort" style="height:60px; border-color:#333; background:#1a1a1a;"></textarea>
+                    </div>
                 </div>
 
                 <div id="sellBasketList"></div>
                 
-                <div style="position:relative;">
-                    <input type="text" id="addItemSearch" placeholder="+ Artikel suchen..." onkeyup="searchForItem(this)">
+                <div style="position:relative; margin-top:10px;">
+                    <input type="text" id="addItemSearch" class="search-input" placeholder="+ Artikel suchen..." onkeyup="searchForItem(this)">
                     <div id="searchDropdown"></div>
                 </div>
 
-                <div style="margin-top:15px; padding-top:10px; border-top:1px solid #333;">
+                <div style="margin-top:20px; padding-top:15px; border-top:1px solid #333;">
                     <div class="row-2">
                         <div><label>Versand (€)</label><input type="number" step="0.01" id="sellShipping" value="0" oninput="calcBasketTotal()"></div>
                         <div><label>Gebühren (€)</label><input type="number" step="0.01" id="sellFees" value="0" oninput="calcBasketTotal()"></div>
                     </div>
                     
-                    <label style="margin-top:8px;">Gesamt (Kundenpreis)</label><input type="text" id="sellTotal" disabled style="color:var(--success); font-weight:bold; background:#111; border-color:var(--success);">
-                    <label style="margin-top:8px;">Beleg</label>
+                    <label style="margin-top:12px;">Gesamt (Kundenpreis)</label>
+                    <input type="text" id="sellTotal" disabled style="color:var(--success); font-weight:bold; background:#111; border-color:var(--success); font-size:1.1rem;">
+                    
+                    <label style="margin-top:12px;">Beleg (Foto)</label>
                     <input type="file" id="sellFileInput" onchange="handleImageCompressed(this, 'sellBild', 'sellImgPreview')">
                     <input type="hidden" id="sellBild">
-                    <img id="sellImgPreview" style="width:100%; margin-top:5px; border:1px solid #444; display:none;">
+                    <img id="sellImgPreview" style="width:100%; margin-top:5px; border:1px solid #444; display:none; border-radius:6px;">
                 </div>
             </div>
             <div class="modal-footer" style="grid-template-columns: 1fr 1fr 1fr;">
                 <button class="btn btn-secondary" onclick="closeModals()">Abbrechen</button>
-                <button class="btn btn-copy" onclick="copyInvoiceData()">📋 Kopieren</button>
+                <button class="btn btn-copy" onclick="copyInvoiceData()">📋 Alles Kop.</button>
                 <button class="btn btn-primary" onclick="performSell()">Buchen</button>
             </div>
         </div>
@@ -281,8 +779,7 @@
             <div class="modal-header">Optionen</div>
             <div class="modal-body">
                 
-                <div class="settings-group">
-                    <div class="settings-title">Sicherheit</div>
+                <div style="margin-bottom:15px;">
                     <div class="switch-row">
                         <span class="switch-label">Automatisch Backup nach Änderung</span>
                         <label class="switch">
@@ -292,33 +789,28 @@
                     </div>
                 </div>
 
-                <div class="settings-group">
-                    <div class="settings-title">Daten & Aktionen</div>
-                    <div class="action-list">
-                        <div class="action-btn" onclick="exportBackup()">
-                            <span class="action-icon">💾</span>
-                            <span class="action-text">Backup speichern (.json)</span>
-                        </div>
-                        
-                        <label class="action-btn">
-                            <span class="action-icon">📂</span>
-                            <span class="action-text">Backup importieren (.json)</span>
-                            <input type="file" accept=".json" onchange="importBackup(this)" style="display:none;">
-                        </label>
+                <div class="action-list">
+                    <div class="action-btn" onclick="exportBackup()">
+                        <span class="action-text">💾 Backup speichern (.json)</span>
+                    </div>
+                    
+                    <label class="action-btn">
+                        <span class="action-text">📂 Backup importieren (.json)</span>
+                        <input type="file" accept=".json" onchange="importBackup(this)" style="display:none;">
+                    </label>
 
-                        <div class="action-btn" onclick="exportCSV()">
-                            <span class="action-icon">📊</span>
-                            <span class="action-text">CSV-Export (Excel/Steuer)</span>
-                        </div>
-                        <div class="action-btn" onclick="printInventory()">
-                            <span class="action-icon">🖨️</span>
-                            <span class="action-text">Inventur-Liste drucken</span>
-                        </div>
+                    <div class="action-btn" onclick="exportCSV()">
+                        <span class="action-text">📊 CSV-Export (Excel/Steuer)</span>
+                    </div>
+                    <div class="action-btn" onclick="printInventory()">
+                        <span class="action-text">🖨️ Inventur-Liste drucken</span>
                     </div>
                 </div>
 
             </div>
-            <div class="modal-footer"><button class="btn btn-secondary" style="grid-column:1/-1" onclick="closeModals()">Schließen</button></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="grid-column:1/-1" onclick="closeModals()">Schließen</button>
+            </div>
         </div>
     </div>
 
@@ -329,12 +821,11 @@
                 <input type="hidden" id="editSaleId">
                 <div class="form-grid">
                     <div><label>Rechnungs-Nr.</label><input type="text" id="editSaleInv"></div>
+                    <div><label>Kunden-Adresse (Nachpflegen)</label><textarea id="editSaleAddress" style="height:60px;"></textarea></div>
+                    
                     <div><label>Artikelname (Text)</label><input type="text" id="editSaleName"></div>
                     <div class="row-2">
-                         <div>
-                             <label>Plattform</label>
-                             <input list="platformOptions" id="editSalePlatform">
-                         </div>
+                         <div><label>Plattform</label><input list="platformOptions" id="editSalePlatform"></div>
                          <div><label>Datum</label><input type="date" id="editSaleDate"></div>
                     </div>
                     <div class="row-2">
@@ -359,14 +850,14 @@
             <div class="modal-header">Rechnung löschen</div>
             <div class="modal-body" style="display:grid; gap:10px;">
                 <input type="hidden" id="delInvoiceTarget">
-                <div class="delete-choice-btn" onclick="executeDelete(true)">
-                    <span class="del-title">📦 Lager aufstocken & löschen</span>
-                    <span class="del-desc">Artikel werden wieder ins Lager gebucht, Rechnung wird entfernt.</span>
-                </div>
-                <div class="delete-choice-btn" onclick="executeDelete(false)" style="border-color:#522; background:#311;">
-                    <span class="del-title" style="color:#faa">🗑️ Nur Liste löschen</span>
-                    <span class="del-desc">Lagerbestand bleibt unverändert. Nur der Eintrag verschwindet.</span>
-                </div>
+                <button class="btn" style="width:100%; margin-bottom:5px; background:#333; text-align:left; padding:15px;" onclick="executeDelete(true)">
+                    <strong>📦 Lager aufstocken & löschen</strong><br>
+                    <span style="font-size:0.7rem; color:#888;">Artikel kommen zurück ins Lager. Verkauf wird gelöscht.</span>
+                </button>
+                <button class="btn" style="width:100%; background:#522; text-align:left; padding:15px;" onclick="executeDelete(false)">
+                    <strong style="color:#faa;">🗑️ Nur aus Liste entfernen</strong><br>
+                    <span style="font-size:0.7rem; color:#faa;">Lagerbestand bleibt unverändert. Nur der Eintrag verschwindet.</span>
+                </button>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" style="grid-column:1/-1" onclick="closeModals()">Abbrechen</button>
@@ -380,6 +871,7 @@
     </div>
 
     <script>
+        // --- DATENBANK & GLOBALE VARIABLEN ---
         const DB_NAME = 'LagerManagerPro';
         let db;
         let inventory = [];
@@ -387,7 +879,9 @@
         let currentView = 'inventory';
         let autoBackupMode = false;
         let unsavedChanges = false;
+        let basket = []; // Warenkorb für Verkauf
 
+        // --- DB INITIALISIERUNG ---
         function initDB() {
             return new Promise((resolve) => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -440,6 +934,7 @@
             if(autoBackupMode) { exportBackup(); }
         }
 
+        // --- NAVIGATION & UI ---
         function switchTab(tab) {
             currentView = tab;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -452,9 +947,14 @@
 
         function renderCurrentView() {
             const term = document.getElementById('searchInput').value.toLowerCase();
-            document.getElementById('clearSearchBtn').style.display = term ? 'flex' : 'none';
+            document.getElementById('clearSearchBtn') ? document.getElementById('clearSearchBtn').style.display = term ? 'flex' : 'none' : null;
             if (currentView === 'inventory') renderInventory(term);
             else renderSales(term);
+        }
+
+        function clearSearch() { 
+            document.getElementById('searchInput').value = ''; 
+            renderCurrentView(); 
         }
 
         function updateStats() {
@@ -463,6 +963,7 @@
             
             const uniqueInvoices = new Set();
             salesLog.forEach(s => {
+                // Bei Storno nicht den Umsatz zählen
                 if(!s.isStorno) {
                     tRev += (s.total || 0);
                     tProf += ((s.total || 0) - (s.shipping || 0) - (s.fees || 0) - ((s.buyPrice || 0) * (s.qty || 0)));
@@ -477,9 +978,11 @@
             document.getElementById('statProfit').innerText = tProf.toFixed(2) + " €";
         }
 
+        // --- RENDER INVENTORY ---
         function renderInventory(term) {
             const list = document.getElementById('itemList');
             list.innerHTML = '';
+            
             const filtered = [...inventory].reverse().filter(i => 
                 i.name.toLowerCase().includes(term) || (i.artnr && i.artnr.toLowerCase().includes(term))
             );
@@ -491,21 +994,38 @@
                 
                 let metaParts = [];
                 if(i.artnr) metaParts.push(i.artnr);
-                if(i.groesse) metaParts.push(i.groesse);
                 if(i.ort) metaParts.push(i.ort);
-                let metaHTML = metaParts.map(p => `<span class="meta-part">${p}</span>`).join('<span class="meta-sep">|</span>');
+                let metaHTML = metaParts.map(p => `<span class="meta-part">${p}</span>`).join('<span class="meta-sep"> | </span>');
+                
+                // SIZE BADGE
+                let sizeBadge = i.groesse ? `<span class="size-badge">${i.groesse}</span>` : '';
+
+                // ICONS
                 let icons = "";
                 if(i.notiz && i.notiz.trim()) icons += '<span class="icon-small">📝</span>';
                 if(i.bild && i.bild.trim()) icons += '<span class="icon-small">🖼️</span>';
 
+                // SOLD OUT INFO (New Feature)
+                let soldInfo = '';
+                if(i.menge <= 0) {
+                    // Suche letzten Verkauf
+                    const sales = salesLog.filter(s => s.artnr === i.artnr || s.name === i.name);
+                    if(sales.length > 0) {
+                        sales.sort((a,b) => new Date(b.date) - new Date(a.date));
+                        const last = sales[0];
+                        if(last && last.date) soldInfo = `<span class="sold-out-msg">Zuletzt verkauft: ${last.date.split('-').reverse().join('.')}</span>`;
+                    }
+                }
+
                 div.innerHTML = `
-                    <div class="qty-box">${i.menge}</div>
+                    <div class="qty-box" style="color:${i.menge<=0?'#555':'var(--primary)'}">${i.menge}</div>
                     <div class="item-info">
-                        <span class="item-name">${i.name}</span>
+                        <span class="item-name">${sizeBadge} ${i.name}</span>
                         <div class="meta-container">
                             <span class="meta-scroller">${metaHTML}</span>
                             <span class="meta-icons">${icons}</span>
                         </div>
+                        ${soldInfo}
                     </div>
                     <div class="item-actions">
                         <span class="price-tag">${(i.preis||0).toFixed(2)} €</span>
@@ -516,13 +1036,18 @@
             });
         }
 
+        // --- RENDER SALES ---
         function renderSales(term) {
             const list = document.getElementById('viewSales');
             list.innerHTML = '';
+            
             const groups = {};
             salesLog.forEach(s => {
                 if(term && !s.name.toLowerCase().includes(term) && !s.invoiceNr.toLowerCase().includes(term)) return;
-                if (!groups[s.invoiceNr]) groups[s.invoiceNr] = { items: [], total: 0, date: s.date, img: s.invoiceImg, platform: s.platform };
+                
+                if (!groups[s.invoiceNr]) groups[s.invoiceNr] = { 
+                    items: [], total: 0, date: s.date, img: s.invoiceImg, platform: s.platform, address: s.address 
+                };
                 groups[s.invoiceNr].items.push(s);
                 groups[s.invoiceNr].total += (s.total || 0);
             });
@@ -532,26 +1057,18 @@
             Object.keys(groups).sort().reverse().forEach(inv => {
                 const g = groups[inv];
                 const hasStorno = g.items.some(x => x.isStorno);
-                
-                let totalBuyPrice = 0;
-                let totalShipping = 0;
-                let totalFees = 0;
+                const addrIcon = g.address ? ' 🏠' : '';
                 
                 let itemsHTML = g.items.map(it => {
                     const isStorno = it.isStorno === true;
-                    if(!isStorno) {
-                        totalBuyPrice += (it.buyPrice || 0) * (it.qty || 1);
-                        totalShipping += (it.shipping || 0); 
-                        totalFees += (it.fees || 0);
-                    }
-
+                    
                     const rowClass = isStorno ? 'sale-row storno-item' : 'sale-row';
                     const nameClass = isStorno ? 'sale-name-col storno-text' : 'sale-name-col';
                     const badge = isStorno ? '<span class="storno-badge">(STORNO)</span>' : '';
                     
                     const stornoBtn = isStorno 
                         ? '' 
-                        : `<button class="btn-mini-icon btn-del-icon" title="Storno" onclick="markSaleAsStorno(${it.id})">↩️</button>`;
+                        : `<button class="btn-mini-icon btn-del-icon" title="Storno" onclick="markStorno(${it.id})">↩️</button>`;
 
                     return `<div class="${rowClass}">
                         <span class="${nameClass}">${it.name} (${it.qty}x) ${badge}</span>
@@ -563,8 +1080,6 @@
                     </div>`
                 }).join('');
 
-                const profit = g.total - totalShipping - totalFees - totalBuyPrice;
-                const profitClass = profit >= 0 ? 'text-green' : 'text-red';
                 const stornoHeaderLabel = hasStorno ? '<span class="storno-label-main">(STORNO)</span>' : '';
                 const headerClass = hasStorno ? 'sale-header storno-bg' : 'sale-header';
 
@@ -572,17 +1087,16 @@
                 div.className = 'sale-group';
                 div.innerHTML = `
                     <div class="${headerClass}">
-                        <span>${inv} ${stornoHeaderLabel} <span style="font-weight:normal; color:#888;">| ${g.platform||'-'}</span></span>
+                        <span>${inv} ${stornoHeaderLabel}${addrIcon} <span style="font-weight:normal; color:#888;">| ${g.platform||'-'}</span></span>
                         <span>${formatDate(g.date)}</span>
                     </div>
                     ${itemsHTML}
                     <div class="sale-footer">
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <span style="color:#eee;">SUM: ${g.total.toFixed(2)} €</span>
-                            <span class="${profitClass}" style="font-size:0.65rem;">${profit >= 0 ? '+' : ''}${profit.toFixed(2)} €</span>
+                            <span style="color:${hasStorno?'#999':'#eee'}">SUM: ${g.total.toFixed(2)} €</span>
                         </div>
                         <div style="display:flex;">
-                             <button class="btn-mini-icon btn-copy-icon" title="Daten kopieren (für RechnungApp)" onclick="copySaleFromHistory('${inv}')">📋</button>
+                             <button class="btn-mini-icon btn-copy-icon" title="Daten kopieren" onclick="copySaleGroup('${inv}')">📋</button>
                             <button class="btn-mini-icon btn-del-icon" title="Löschen" onclick="openDeleteChoice('${inv}')">🗑️</button>
                         </div>
                     </div>`;
@@ -590,7 +1104,9 @@
             });
         }
 
+        // --- COPY LOGIC (ADRESSE ENTHALTEN) ---
         function copyInvoiceData() {
+            // Aus dem "Verkaufen" Fenster
             const data = {
                 invoiceNr: document.getElementById('sellInvoiceNr').value,
                 date: document.getElementById('sellDate').value,
@@ -603,12 +1119,14 @@
                     artnr: b.artnr,
                     qty: b.qty,
                     priceTotal: b.priceTotal
-                }))
+                })),
+                address: document.getElementById('sellAddress').value 
             };
             doCopy(data);
         }
 
-        function copySaleFromHistory(invNr) {
+        function copySaleGroup(invNr) {
+            // Aus der Historie
             const relatedSales = salesLog.filter(s => s.invoiceNr === invNr);
             if(relatedSales.length === 0) return;
             const first = relatedSales[0];
@@ -637,7 +1155,8 @@
                 fees: feeSum,
                 total: totalSum.toFixed(2) + " €",
                 items: items,
-                type: isStornoGroup ? 'storno' : 'invoice'
+                type: isStornoGroup ? 'storno' : 'invoice',
+                address: first.address || ""
             };
             doCopy(data, isStornoGroup);
         }
@@ -653,7 +1172,8 @@
             });
         }
 
-        async function markSaleAsStorno(id) {
+        // --- STORNO / LÖSCHEN ---
+        async function markStorno(id) {
             const s = salesLog.find(x => x.id === id);
             if(!s) return;
             if(s.isStorno) return; 
@@ -699,51 +1219,7 @@
             triggerBackupIfAuto(); 
         }
 
-        function printInventory() {
-            const sorted = [...inventory].sort((a,b) => (a.ort||'').localeCompare(b.ort||''));
-            let h = `<html><head><title>Inventur Liste</title><style>
-            body{font-family:sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} 
-            th,td{border:1px solid #ccc; padding:8px; text-align:left; font-size:12px;} 
-            th{background:#eee;} .check-col{width:100px;}
-            </style></head><body><h2>Inventurliste - ${new Date().toLocaleDateString()}</h2>
-            <table><thead><tr><th>Ort</th><th>Art-Nr</th><th>Name</th><th>Soll</th><th>Ist (Zählung)</th></tr></thead><tbody>`;
-            sorted.forEach(i => { h += `<tr><td>${i.ort||'-'}</td><td>${i.artnr||''}</td><td>${i.name}</td><td>${i.menge}</td><td class="check-col"></td></tr>`; });
-            h += `</tbody></table><script>window.print();<\/script></body></html>`;
-            const w = window.open('','_blank'); w.document.write(h); w.document.close();
-        }
-
-        function exportCSV() {
-            // SPALTE STATUS IST JETZT GANZ VORNE
-            // KAUF-ORT WURDE EINGEFÜGT
-            let csv = "Status;Datum;RechnungsNr;Plattform;KaufOrt;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
-            
-            salesLog.forEach(s => {
-                const buy = s.buyPrice || 0;
-                const sell = s.total || 0;
-                const ship = s.shipping || 0;
-                const fees = s.fees || 0;
-                const profit = sell - ship - fees - (buy * (s.qty || 1));
-                const f = (n) => n.toFixed(2).replace('.', ',');
-                
-                // STATUS TEXT (leer wenn ok)
-                const status = s.isStorno ? 'STORNO' : '';
-                
-                // KAUF-ORT FINDEN (Versuchen aus Sales zu holen, sonst aus Inventar suchen)
-                let sourcingLoc = s.sourcingLoc || '';
-                if(!sourcingLoc) {
-                    const originalItem = inventory.find(i => i.artnr === s.artnr);
-                    if(originalItem) sourcingLoc = originalItem.ort || '';
-                }
-
-                csv += `${status};${s.date};${s.invoiceNr};${s.platform};"${sourcingLoc}";${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-
+        // --- MODAL: ITEM EDITIEREN ---
         function openEditModal(id = null) {
             document.getElementById('modalEdit').style.display = 'flex';
             document.getElementById('inpFile').value = "";
@@ -807,7 +1283,7 @@
             }
         }
 
-        let basket = [];
+        // --- MODAL: VERKAUFEN ---
         function openSellModal(e, id) {
             e.stopPropagation();
             const it = inventory.find(x => x.id === id);
@@ -819,6 +1295,7 @@
             document.getElementById('sellFileInput').value = "";
             document.getElementById('sellImgPreview').style.display = 'none';
             document.getElementById('sellPlatform').value = "";
+            document.getElementById('sellAddress').value = ""; // Adresse reset
             updateInvoicePreview(); renderBasket();
             document.getElementById('modalSell').style.display = 'flex';
         }
@@ -868,7 +1345,21 @@
             const list = document.getElementById('sellBasketList'); list.innerHTML = '';
             basket.forEach((item, idx) => {
                 const d = document.createElement('div'); d.className = 'basket-item';
-                d.innerHTML = `<div class="basket-header"><span>${item.name}</span><span style="color:var(--danger); cursor:pointer; font-size:0.75rem;" onclick="removeFromBasket(${idx})">ENTFERNEN</span></div><div class="row-2"><div><label>Menge</label><input type="number" value="${item.qty}" min="1" max="${item.stock}" onchange="updateBasket(${idx}, 'qty', this.value)"></div><div><label>Preis Total</label><input type="number" value="${item.priceTotal}" step="0.01" onchange="updateBasket(${idx}, 'price', this.value)"></div></div>`;
+                d.innerHTML = `
+                    <div class="basket-header">
+                        <span>${item.name}</span>
+                        <span style="color:var(--danger); cursor:pointer; font-size:0.75rem;" onclick="removeFromBasket(${idx})">ENTFERNEN</span>
+                    </div>
+                    <div class="row-2">
+                        <div>
+                            <label>Menge</label>
+                            <input type="number" value="${item.qty}" min="1" max="${item.stock}" onchange="updateBasket(${idx}, 'qty', this.value)">
+                        </div>
+                        <div>
+                            <label>Preis Total</label>
+                            <input type="number" value="${item.priceTotal}" step="0.01" onchange="updateBasket(${idx}, 'price', this.value)">
+                        </div>
+                    </div>`;
                 list.appendChild(d);
             });
             calcBasketTotal();
@@ -909,6 +1400,7 @@
             const date = document.getElementById('sellDate').value;
             const platform = document.getElementById('sellPlatform').value || "Sonstiges"; 
             const globalImg = document.getElementById('sellBild').value;
+            const addr = document.getElementById('sellAddress').value;
 
             for(let i = 0; i < basket.length; i++) {
                 const item = basket[i];
@@ -924,7 +1416,7 @@
                     total: (item.priceTotal || 0) + (i === 0 ? ship : 0), 
                     invoiceImg: useImg,
                     isStorno: false,
-                    // HIER WIRD DER KAUF-ORT GESPEICHERT:
+                    address: addr,
                     sourcingLoc: dbItem ? dbItem.ort : ''
                 });
             }
@@ -932,6 +1424,7 @@
             triggerBackupIfAuto(); 
         }
 
+        // --- MODAL: SALE EDITIEREN ---
         function openEditSale(id) {
             const s = salesLog.find(x => x.id === id);
             document.getElementById('editSaleId').value = id;
@@ -943,6 +1436,10 @@
             document.getElementById('editSalePrice').value = s.total.toFixed(2);
             document.getElementById('editSaleShipping').value = s.shipping || 0;
             document.getElementById('editSaleFees').value = s.fees || 0;
+            
+            // ADRESSE LADEN
+            document.getElementById('editSaleAddress').value = s.address || '';
+            
             document.getElementById('modalEditSale').style.display = 'flex';
         }
 
@@ -966,11 +1463,88 @@
             s.shipping = parseFloat(document.getElementById('editSaleShipping').value) || 0;
             s.fees = parseFloat(document.getElementById('editSaleFees').value) || 0;
             s.total = newTotal;
+            s.address = document.getElementById('editSaleAddress').value; // Save Address
+
             await dbOp('sales', 'put', s);
             await loadData(); closeModals();
             triggerBackupIfAuto(); 
         }
 
+        // --- EXPORT & BACKUP ---
+        function printInventory() {
+            const sorted = [...inventory].sort((a,b) => (a.ort||'').localeCompare(b.ort||''));
+            let h = `<html><head><title>Inventur Liste</title><style>
+            body{font-family:sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} 
+            th,td{border:1px solid #ccc; padding:8px; text-align:left; font-size:12px;} 
+            th{background:#eee;} .check-col{width:100px;}
+            </style></head><body><h2>Inventurliste - ${new Date().toLocaleDateString()}</h2>
+            <table><thead><tr><th>Ort</th><th>Art-Nr</th><th>Name</th><th>Soll</th><th>Ist (Zählung)</th></tr></thead><tbody>`;
+            sorted.forEach(i => { h += `<tr><td>${i.ort||'-'}</td><td>${i.artnr||''}</td><td>${i.name}</td><td>${i.menge}</td><td class="check-col"></td></tr>`; });
+            h += `</tbody></table><script>window.print();<\/script></body></html>`;
+            const w = window.open('','_blank'); w.document.write(h); w.document.close();
+        }
+
+        function exportCSV() {
+            // Zähle Vorkommen pro Rechnung für "KOMBI" Status
+            const counts = {};
+            salesLog.forEach(s => { counts[s.invoiceNr] = (counts[s.invoiceNr] || 0) + 1; });
+
+            let c = "Status;Datum;RechnungsNr;Plattform;KaufOrt;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
+            salesLog.forEach(s => {
+                const buy = s.buyPrice || 0;
+                const sell = s.total || 0;
+                const ship = s.shipping || 0;
+                const fees = s.fees || 0;
+                const profit = sell - ship - fees - (buy * (s.qty || 1));
+                const f = (n) => n.toFixed(2).replace('.', ',');
+                
+                // KAUF ORT LOGIC
+                let loc = s.sourcingLoc || '';
+                if(!loc) {
+                    const o = inventory.find(i => i.artnr === s.artnr);
+                    if(o) loc = o.ort || '';
+                }
+
+                // STATUS LOGIC (NEU)
+                let status = "";
+                if(s.isStorno) status = "STORNO";
+                else if(counts[s.invoiceNr] > 1) status = "KOMBI";
+
+                c += `${status};${s.date};${s.invoiceNr};${s.platform};"${loc}";${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)}\n`;
+            });
+            const blob = new Blob([c], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Umsatz_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        async function exportBackup() {
+            const data = { artikel: inventory, sales: salesLog };
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            setUnsaved(false); 
+        }
+
+        async function importBackup(inp) {
+            const file = inp.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    await dbOp('inventory', 'clear');
+                    await dbOp('sales', 'clear');
+                    for(let i of data.artikel || []) { delete i.id; await dbOp('inventory', 'add', i); }
+                    for(let s of data.sales || []) { delete s.id; await dbOp('sales', 'add', s); }
+                    location.reload();
+                } catch(err) { alert("Fehler: " + err); }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- HELPER: BILDER & ETC ---
         function openSettings() { document.getElementById('modalSettings').style.display = 'flex'; }
         function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
         function clearSearch() { document.getElementById('searchInput').value = ''; renderCurrentView(); }
@@ -1005,33 +1579,8 @@
 
         function viewImage(src) { document.getElementById('fullImage').src = src; document.getElementById('modalImageViewer').style.display = 'flex'; }
         function closeImageViewer() { document.getElementById('modalImageViewer').style.display = 'none'; }
-
-        async function exportBackup() {
-            const data = { artikel: inventory, sales: salesLog };
-            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            setUnsaved(false); 
-        }
-
-        async function importBackup(inp) {
-            const file = inp.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    await dbOp('inventory', 'clear');
-                    await dbOp('sales', 'clear');
-                    for(let i of data.artikel || []) { delete i.id; await dbOp('inventory', 'add', i); }
-                    for(let s of data.sales || []) { delete s.id; await dbOp('sales', 'add', s); }
-                    location.reload();
-                } catch(err) { alert("Fehler: " + err); }
-            };
-            reader.readAsText(file);
-        }
-
+        
+        // START APP
         initDB().then(loadData);
     </script>
 </body>
