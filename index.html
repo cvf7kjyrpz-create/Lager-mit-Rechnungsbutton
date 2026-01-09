@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <title>LagerManager V43</title>
+    <title>LagerManager V44</title>
     
     <style>
         /* --- GRUNDLEGENDE VARIABLEN & THEME --- */
@@ -31,9 +31,9 @@
             color: var(--text); 
             margin: 0; 
             padding-bottom: 90px; /* Platz für FAB */
-            font-size: 13px; /* Minimalistischere Schriftgröße */
+            font-size: 12px; /* NOCHMAL KLEINER GEMACHT */
             overscroll-behavior-y: none;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         /* --- HEADER BEREICH --- */
@@ -50,7 +50,7 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 8px 12px; 
+            padding: 6px 10px; 
             background: #181818; 
         }
         
@@ -84,7 +84,7 @@
 
         h1 { 
             margin: 0; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             font-weight: 700; 
             text-transform: uppercase; 
             letter-spacing: 1px; 
@@ -118,13 +118,13 @@
             flex: 1; 
             background: transparent; 
             border: none; 
-            padding: 10px; 
+            padding: 8px; 
             color: #666; 
             font-weight: 600; 
             cursor: pointer; 
             border-bottom: 2px solid transparent; 
             text-transform: uppercase; 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             letter-spacing: 0.5px; 
             transition: all 0.2s; 
         }
@@ -138,11 +138,11 @@
 
         /* --- TOOLBAR & SUCHE --- */
         .toolbar { 
-            padding: 10px; 
+            padding: 8px; 
             border-bottom: 1px solid var(--border); 
             display: flex; 
             flex-direction: column; 
-            gap: 10px; 
+            gap: 8px; 
         }
 
         .search-wrapper { 
@@ -152,14 +152,14 @@
 
         .search-input { 
             width: 100%; 
-            height: 32px; 
+            height: 28px; /* Kompakter */
             background: #0a0a0a; 
             border: 1px solid var(--border); 
             border-radius: 4px; 
-            padding: 0 35px 0 10px; 
+            padding: 0 30px 0 8px; 
             color: #ccc; 
             box-sizing: border-box; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             transition: border-color 0.2s;
         }
         .search-input:focus {
@@ -172,13 +172,13 @@
             right: 0; 
             top: 0; 
             bottom: 0; 
-            width: 35px; 
+            width: 30px; 
             background: none; 
             border: none; 
             color: #666; 
             cursor: pointer; 
             display: none; 
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         /* --- STATISTIK GRID (Minimalistischer) --- */
@@ -188,28 +188,28 @@
             gap: 1px; 
             background: var(--border); 
             border: 1px solid var(--border); 
-            border-radius: 4px; 
+            border-radius: 3px; 
             overflow: hidden; 
         }
 
         .stat-item { 
             background: var(--panel); 
-            padding: 6px 4px; 
+            padding: 4px 2px; 
             text-align: center; 
         }
 
         .stat-lbl { 
-            font-size: 0.6rem; 
+            font-size: 0.55rem; 
             color: #666; 
             text-transform: uppercase; 
             display: block; 
-            margin-bottom: 2px; 
+            margin-bottom: 1px; 
             letter-spacing: 0.5px; 
             font-weight: 600;
         }
 
         .stat-val { 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             font-weight: 700; 
             display: block; 
             color: #eee; 
@@ -225,21 +225,21 @@
             display: block; 
         }
 
-        /* --- LAGER LISTE (Kompakteres Design) --- */
+        /* --- LAGER LISTE (Sehr Kompakt) --- */
         .list-row { 
             display: grid; 
-            grid-template-columns: 40px 1fr auto; 
-            padding: 8px 10px; 
-            border-bottom: 1px solid #2a2a2a; 
+            grid-template-columns: 35px 1fr auto; 
+            padding: 5px 8px; 
+            border-bottom: 1px solid #222; 
             align-items: flex-start; 
             background: var(--bg); 
             cursor: pointer; 
-            gap: 10px; 
+            gap: 8px; 
             transition: background 0.1s;
         }
 
         .list-row:hover { 
-            background: #1a1a1a; 
+            background: #181818; 
         }
         
         .list-row.marked { 
@@ -251,14 +251,14 @@
             color: var(--primary); 
             font-weight: 700; 
             text-align: center; 
-            font-size: 1rem; 
-            padding-top: 2px; 
+            font-size: 0.9rem; 
+            padding-top: 1px; 
         }
 
         .item-info { 
             display: flex; 
             flex-direction: column; 
-            gap: 3px; 
+            gap: 1px; 
             overflow: hidden; 
             min-width: 0; 
         }
@@ -266,8 +266,8 @@
         .item-name { 
             font-weight: 600; 
             color: #ddd; 
-            font-size: 0.85rem; 
-            line-height: 1.3; 
+            font-size: 0.75rem; 
+            line-height: 1.2; 
             white-space: normal; 
             word-break: break-word; 
         }
@@ -278,11 +278,11 @@
             background: #252525;
             border: 1px solid #444;
             color: #ddd;
-            padding: 1px 6px;
+            padding: 0px 5px;
             border-radius: 3px;
             font-weight: 700;
-            font-size: 0.7rem;
-            margin-right: 5px;
+            font-size: 0.65rem;
+            margin-right: 4px;
             vertical-align: middle;
             text-transform: uppercase;
         }
@@ -290,10 +290,10 @@
         /* Ausverkauft Text */
         .sold-out-msg { 
             color: var(--danger); 
-            font-size: 0.7rem; 
+            font-size: 0.65rem; 
             font-weight: 700; 
             display: block; 
-            margin-top: 2px; 
+            margin-top: 1px; 
             text-transform: uppercase; 
         }
 
@@ -310,7 +310,7 @@
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            font-size: 0.7rem; 
+            font-size: 0.65rem; 
             color: #777; 
             margin-right: 5px; 
         }
@@ -318,8 +318,8 @@
         .meta-icons { 
             flex-shrink: 0; 
             display: flex; 
-            gap: 4px; 
-            font-size: 0.75rem; 
+            gap: 3px; 
+            font-size: 0.7rem; 
             opacity: 0.8;
         }
 
@@ -327,7 +327,7 @@
             text-align: right; 
             display: flex; 
             flex-direction: column; 
-            gap: 4px; 
+            gap: 3px; 
             align-items: flex-end; 
         }
 
@@ -335,15 +335,15 @@
             font-weight: 500; 
             display: block; 
             color: #888; 
-            font-size: 0.8rem; 
+            font-size: 0.75rem; 
         }
 
         .btn-action { 
             background: #222; 
             border: 1px solid #333; 
             color: #aaa; 
-            padding: 4px 8px; 
-            font-size: 0.65rem; 
+            padding: 3px 6px; 
+            font-size: 0.6rem; 
             cursor: pointer; 
             border-radius: 3px; 
             text-transform: uppercase; 
@@ -355,20 +355,20 @@
             color: #eee;
         }
 
-        /* --- VERKAUFS LISTE (Sales) --- */
+        /* --- VERKAUFS LISTE (Sales) - Kompakt --- */
         .sale-group { 
-            margin-bottom: 8px; 
+            margin-bottom: 6px; 
             border-top: 1px solid #2a2a2a; 
             border-bottom: 1px solid #2a2a2a; 
             background: var(--bg); 
         }
 
         .sale-header { 
-            padding: 6px 10px; 
+            padding: 5px 8px; 
             background: #1a1a1a; 
             display: flex; 
             justify-content: space-between; 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             color: #bbb; 
             font-weight: 600; 
             align-items: center; 
@@ -383,16 +383,16 @@
             color: #ff5555; 
             margin-left: 6px; 
             font-weight: 800; 
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
 
         .sale-row { 
-            padding: 8px 10px; 
+            padding: 6px 8px; 
             border-top: 1px solid #222; 
             display: flex; 
             justify-content: space-between; 
             align-items: flex-start; 
-            font-size: 0.8rem; 
+            font-size: 0.75rem; 
         }
         
         .sale-row.storno-item { 
@@ -409,26 +409,26 @@
             color: #ff5555; 
             font-weight: bold; 
             margin-left: 4px; 
-            font-size: 0.7rem; 
+            font-size: 0.65rem; 
         }
 
         .sale-name-col { 
             flex-grow: 1; 
-            margin-right: 12px; 
+            margin-right: 10px; 
             white-space: normal; 
             word-break: break-word; 
-            line-height: 1.3; 
+            line-height: 1.25; 
             color: #ccc; 
         }
         
         .sale-footer { 
-            padding: 6px 10px; 
+            padding: 5px 8px; 
             background: #151515; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             color: #999; 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             font-weight: 600; 
         }
 
@@ -436,15 +436,15 @@
         .btn-mini-icon { 
             background: #252525; 
             border: 1px solid #333; 
-            width: 30px; 
-            height: 30px; 
+            width: 26px; 
+            height: 26px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            border-radius: 4px; 
+            border-radius: 3px; 
             cursor: pointer; 
-            margin-left: 5px; 
-            font-size: 0.95rem; 
+            margin-left: 4px; 
+            font-size: 0.85rem; 
             color: #999; 
             transition: all 0.2s;
         }
@@ -458,8 +458,8 @@
             color: #60a5fa; 
             border-color: #1e3a8a; 
             background: #1e2530; 
-            width: 55px; /* Extra breit zum Treffen */
-            margin-right: 20px; /* Sicherheitsabstand zum Löschen */
+            width: 50px; /* Extra breit zum Treffen */
+            margin-right: 15px; /* Sicherheitsabstand zum Löschen */
         }
         .btn-copy-icon:hover { 
             background: #1d4ed8; 
@@ -483,11 +483,11 @@
             right: 25px; 
             background: var(--primary); 
             color: #fff; 
-            width: 56px; 
-            height: 56px; 
+            width: 50px; 
+            height: 50px; 
             border-radius: 50%; 
             border: none; 
-            font-size: 28px; 
+            font-size: 26px; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
             cursor: pointer; 
             display: flex; 
@@ -519,7 +519,7 @@
         .modal-box { 
             background: #1a1a1a; 
             width: 92%; 
-            max-width: 450px; 
+            max-width: 420px; 
             border: 1px solid #333; 
             display: flex; 
             flex-direction: column; 
@@ -530,39 +530,39 @@
         }
 
         .modal-header { 
-            padding: 12px 15px; 
+            padding: 10px 15px; 
             background: #111; 
             border-bottom: 1px solid #222; 
             font-weight: 700; 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             color: #eee; 
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
         }
 
         .modal-body { 
-            padding: 20px 15px; 
+            padding: 15px; 
             overflow-y: auto; 
         }
 
         .modal-footer { 
-            padding: 12px 15px; 
+            padding: 10px 15px; 
             border-top: 1px solid #222; 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+            gap: 10px; 
             background: #111; 
         }
 
         /* --- FORMULARE (Kompakt & Modern) --- */
-        .form-grid { display: grid; gap: 12px; }
-        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-grid { display: grid; gap: 10px; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
         label { 
             display: block; 
-            font-size: 0.7rem; 
+            font-size: 0.65rem; 
             color: #777; 
-            margin-bottom: 3px; 
+            margin-bottom: 2px; 
             text-transform: uppercase; 
             font-weight: 700; 
             letter-spacing: 0.5px; 
@@ -570,13 +570,13 @@
         
         input, select, textarea { 
             width: 100%; 
-            height: 34px; 
+            height: 30px; /* Flacher */
             background: #0a0a0a; 
             border: 1px solid #333; 
             color: #ddd; 
-            padding: 0 10px; 
+            padding: 0 8px; 
             border-radius: 4px; 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             box-sizing: border-box; 
             transition: border-color 0.2s; 
         }
@@ -588,20 +588,20 @@
         }
 
         textarea { 
-            height: 70px; 
-            padding: 8px; 
+            height: 60px; 
+            padding: 6px; 
             resize: none; 
             font-family: inherit; 
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .btn { 
             border: none; 
-            padding: 12px; 
+            padding: 10px; 
             font-weight: 600; 
             cursor: pointer; 
             text-transform: uppercase; 
-            font-size: 0.8rem; 
+            font-size: 0.75rem; 
             border-radius: 4px; 
             transition: opacity 0.2s; 
         }
@@ -613,7 +613,7 @@
         .btn-copy { background: #1e3a8a; color: #bfdbfe; border: 1px solid #1e40af; }
 
         /* --- SETTINGS MENU --- */
-        .action-list { display: flex; flex-direction: column; gap: 10px; }
+        .action-list { display: flex; flex-direction: column; gap: 8px; }
         
         .action-btn { 
             display: flex; 
@@ -621,11 +621,11 @@
             justify-content: space-between; 
             background: #222; 
             border: 1px solid #2a2a2a; 
-            padding: 14px; 
+            padding: 12px; 
             border-radius: 6px; 
             color: #ccc; 
             cursor: pointer; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             text-decoration: none; 
             transition: 0.2s; 
         }
@@ -644,7 +644,7 @@
             background: #1a1a1a; 
             border: 1px solid #333; 
             margin-top: 4px; 
-            max-height: 220px; 
+            max-height: 200px; 
             overflow-y: auto; 
             position: absolute; 
             width: 100%; 
@@ -654,10 +654,10 @@
         }
         
         .search-res { 
-            padding: 10px 12px; 
+            padding: 8px 10px; 
             border-bottom: 1px solid #2a2a2a; 
             cursor: pointer; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             color: #ddd;
         }
         .search-res:hover { background: #252525; }
@@ -679,8 +679,8 @@
             color: #fff; 
             background: rgba(50,50,50,0.6); 
             border: none; 
-            width: 45px; 
-            height: 45px; 
+            width: 40px; 
+            height: 40px; 
             border-radius: 50%; 
             cursor: pointer; 
             font-size: 1.5rem; 
@@ -695,16 +695,16 @@
         .basket-item { 
             background: #111; 
             border: 1px solid #222; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border-radius: 5px; 
+            padding: 8px; 
+            margin-bottom: 6px; 
+            border-radius: 4px; 
         }
         .basket-header { 
             display: flex; 
             justify-content: space-between; 
-            font-size: 0.85rem; 
+            font-size: 0.8rem; 
             font-weight: 700; 
-            margin-bottom: 8px; 
+            margin-bottom: 6px; 
             color: #ccc;
         }
 
@@ -713,15 +713,15 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 12px; 
+            padding: 10px; 
             background: #222; 
-            border-radius: 6px; 
-            margin-bottom: 15px; 
+            border-radius: 4px; 
+            margin-bottom: 12px; 
             border: 1px solid #333;
         }
-        .switch-label { font-size: 0.85rem; color: #ccc; }
+        .switch-label { font-size: 0.8rem; color: #ccc; }
         
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { 
             position: absolute; 
@@ -735,8 +735,8 @@
         .slider:before { 
             position: absolute; 
             content: ""; 
-            height: 16px; 
-            width: 16px; 
+            height: 14px; 
+            width: 14px; 
             left: 3px; 
             bottom: 3px; 
             background-color: white; 
@@ -744,7 +744,7 @@
             border-radius: 50%; 
         }
         input:checked + .slider { background-color: var(--success); border-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
     </style>
 </head>
@@ -752,7 +752,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager V43</h1>
+            <h1>LagerManager V44</h1>
             <div class="status-container">
                 <div id="statusIndicator" class="status-dot" title="Daten-Status"></div>
                 <button class="header-btn" onclick="openSettings()">Optionen</button>
@@ -882,12 +882,12 @@
             <div class="modal-header">Verkauf Erstellen</div>
             <div class="modal-body">
                 
-                <div style="background:#111; padding:12px; border:1px solid #222; border-radius:5px; margin-bottom:15px;">
+                <div style="background:#111; padding:10px; border:1px solid #222; border-radius:5px; margin-bottom:12px;">
                     <div>
                         <label>Rechnungs-Nr.</label>
                         <input type="text" id="sellInvoiceNr">
                     </div>
-                    <div class="row-2" style="margin-top:10px;">
+                    <div class="row-2" style="margin-top:8px;">
                         <div>
                             <label>Plattform</label>
                             <input list="platformOptions" id="sellPlatform" oninput="updateInvoicePreview()" placeholder="z.B. eBay">
@@ -904,9 +904,9 @@
                             <input type="date" id="sellDate" onchange="updateInvoicePreview()">
                         </div>
                     </div>
-                    <div style="margin-top:10px;">
+                    <div style="margin-top:8px;">
                         <label style="color:#60a5fa;">Kunden-Adresse</label>
-                        <textarea id="sellAddress" placeholder="Name&#10;Straße&#10;Ort" style="height:55px; border-color:#222; background:#050505;"></textarea>
+                        <textarea id="sellAddress" placeholder="Name&#10;Straße&#10;Ort" style="height:50px; border-color:#222; background:#050505;"></textarea>
                     </div>
                 </div>
 
@@ -917,7 +917,7 @@
                     <div id="searchDropdown"></div>
                 </div>
 
-                <div style="margin-top:20px; padding-top:15px; border-top:1px solid #222;">
+                <div style="margin-top:20px; padding-top:10px; border-top:1px solid #222;">
                     <div class="row-2">
                         <div>
                             <label>Versand (€)</label>
@@ -929,10 +929,10 @@
                         </div>
                     </div>
                     
-                    <label style="margin-top:12px;">Gesamt (Kundenpreis)</label>
+                    <label style="margin-top:10px;">Gesamt (Kundenpreis)</label>
                     <input type="text" id="sellTotal" disabled style="color:var(--success); font-weight:bold; background:#000; border-color:var(--success); font-size:1.1rem;">
                     
-                    <label style="margin-top:12px;">Beleg (Foto)</label>
+                    <label style="margin-top:10px;">Beleg (Foto)</label>
                     <input type="file" id="sellFileInput" onchange="handleImageCompressed(this, 'sellBild', 'sellImgPreview')">
                     <input type="hidden" id="sellBild">
                     <img id="sellImgPreview" style="width:100%; margin-top:5px; border:1px solid #333; display:none; border-radius:4px;">
@@ -1005,7 +1005,7 @@
                     
                     <div>
                         <label>Kunden-Adresse</label>
-                        <textarea id="editSaleAddress" style="height:55px;"></textarea>
+                        <textarea id="editSaleAddress" style="height:50px;"></textarea>
                     </div>
                     
                     <div>
@@ -1061,12 +1061,12 @@
             <div class="modal-body" style="display:grid; gap:10px;">
                 <input type="hidden" id="delInvoiceTarget">
                 
-                <button class="btn" style="width:100%; background:#222; text-align:left; padding:15px; border:1px solid #333;" onclick="executeDelete(true)">
+                <button class="btn" style="width:100%; background:#222; text-align:left; padding:12px; border:1px solid #333;" onclick="executeDelete(true)">
                     <strong>📦 Lager füllen & löschen</strong><br>
                     <span style="font-size:0.7rem; color:#888;">Artikel kommen zurück ins Lager. Verkauf wird entfernt.</span>
                 </button>
                 
-                <button class="btn" style="width:100%; background:#2a1111; text-align:left; padding:15px; border:1px solid #422;" onclick="executeDelete(false)">
+                <button class="btn" style="width:100%; background:#2a1111; text-align:left; padding:12px; border:1px solid #422;" onclick="executeDelete(false)">
                     <strong style="color:#faa;">🗑️ Nur aus Liste entfernen</strong><br>
                     <span style="font-size:0.7rem; color:#faa;">Lagerbestand bleibt unverändert. Nur Eintrag weg.</span>
                 </button>
@@ -1134,15 +1134,25 @@
             renderCurrentView();
             updateStats();
             
+            // Einstellungen laden
             const savedAuto = localStorage.getItem('lagerAutoBackup');
             if(savedAuto === 'true') {
                 autoBackupMode = true;
                 document.getElementById('checkAutoBackup').checked = true;
             }
+
+            // Status "Nicht gesichert" wiederherstellen
+            const savedUnsaved = localStorage.getItem('lagerUnsaved');
+            if(savedUnsaved === 'true') {
+                setUnsaved(true);
+            }
         }
 
         function setUnsaved(status) {
             unsavedChanges = status;
+            // Status persistent speichern
+            localStorage.setItem('lagerUnsaved', status);
+            
             const ind = document.getElementById('statusIndicator');
             if(status) ind.classList.add('unsafe');
             else ind.classList.remove('unsafe');
@@ -1319,6 +1329,15 @@
                 const hasStorno = g.items.some(x => x.isStorno);
                 const addrIcon = g.address ? ' 🏠' : '';
                 
+                // Gewinn der Gruppe berechnen
+                let groupProfit = 0;
+                g.items.forEach(it => {
+                    if(!it.isStorno) {
+                        const buy = (it.buyPrice || 0) * (it.qty || 0);
+                        groupProfit += (it.total || 0) - (it.shipping || 0) - (it.fees || 0) - buy;
+                    }
+                });
+
                 let itemsHTML = g.items.map(it => {
                     const isStorno = it.isStorno === true;
                     const rowClass = isStorno ? 'sale-row storno-item' : 'sale-row';
@@ -1341,6 +1360,9 @@
 
                 const stornoHeaderLabel = hasStorno ? '<span class="storno-label-main">(STORNO)</span>' : '';
                 const headerClass = hasStorno ? 'sale-header storno-bg' : 'sale-header';
+                
+                // Profit Farbe
+                const profitColor = groupProfit >= 0 ? '#4ade80' : '#f87171'; // Grün oder Rot
 
                 const div = document.createElement('div');
                 div.className = 'sale-group';
@@ -1358,6 +1380,7 @@
                     <div class="sale-footer">
                         <div style="display:flex; gap:10px; align-items:center;">
                             <span style="color:${hasStorno?'#999':'#eee'}">SUM: ${g.total.toFixed(2)} €</span>
+                            <span style="color:${profitColor}; margin-left:5px; font-weight:normal;">(Gew: ${groupProfit.toFixed(2)} €)</span>
                         </div>
                         <div style="display:flex;">
                              <button class="btn-mini-icon btn-copy-icon" title="Daten kopieren" onclick="copySaleGroup('${inv}')">📋</button>
@@ -1856,7 +1879,8 @@
             const counts = {};
             salesLog.forEach(s => { counts[s.invoiceNr] = (counts[s.invoiceNr] || 0) + 1; });
 
-            let c = "Status;Datum;RechnungsNr;Plattform;KaufOrt;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
+            // CSV Header inklusive Kaufdatum_Artikel
+            let c = "Status;Datum;RechnungsNr;Plattform;KaufOrt;Kaufdatum_Artikel;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
             salesLog.forEach(s => {
                 const buy = s.buyPrice || 0;
                 const sell = s.total || 0;
@@ -1865,17 +1889,24 @@
                 const profit = sell - ship - fees - (buy * (s.qty || 1));
                 const f = (n) => n.toFixed(2).replace('.', ',');
                 
+                // Kauf Ort & Kaufdatum Ermittlung
                 let loc = s.sourcingLoc || '';
-                if(!loc) {
+                let buyDate = '';
+                
+                // Versuche Daten aus Inventar zu holen (falls noch existent)
+                if(!loc || !buyDate) {
                     const o = inventory.find(i => i.artnr === s.artnr);
-                    if(o) loc = o.ort || '';
+                    if(o) {
+                        if(!loc) loc = o.ort || '';
+                        buyDate = o.datum || '';
+                    }
                 }
 
                 let status = "";
                 if(s.isStorno) status = "STORNO";
                 else if(counts[s.invoiceNr] > 1) status = "KOMBI";
 
-                c += `${status};${s.date};${s.invoiceNr};${s.platform};"${loc}";${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)}\n`;
+                c += `${status};${s.date};${s.invoiceNr};${s.platform};"${loc}";"${buyDate}";${s.artnr||''};"${s.name.replace(/"/g, '""')}";${s.qty};${f(buy)};${f(sell)};${f(ship)};${f(fees)};${f(profit)}\n`;
             });
             const blob = new Blob([c], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -1893,6 +1924,8 @@
             a.href = url; 
             a.download = `Backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            
+            // Status als gesichert markieren
             setUnsaved(false); 
         }
 
