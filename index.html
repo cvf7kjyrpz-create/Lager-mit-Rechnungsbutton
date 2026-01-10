@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <title>LagerManager V45</title>
+    <title>LagerManager V46</title>
     
     <style>
         /* --- GRUNDLEGENDE VARIABLEN & THEME --- */
@@ -752,7 +752,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager V45</h1>
+            <h1>LagerManager V46</h1>
             <div class="status-container">
                 <div id="statusIndicator" class="status-dot" title="Daten-Status"></div>
                 <button class="header-btn" onclick="openSettings()">Optionen</button>
@@ -1751,7 +1751,9 @@
 
         function calcBasketTotal() {
             let sum = basket.reduce((acc, item) => acc + (item.priceTotal || 0), 0);
-            sum += parseFloat(document.getElementById('sellShipping').value || 0);
+            // ÄNDERUNG: Versand wird NICHT mehr zum Kundenpreis addiert.
+            // Der im Warenkorb eingetragene Preis IST der Endpreis.
+            // sum += parseFloat(document.getElementById('sellShipping').value || 0); 
             document.getElementById('sellTotal').value = sum.toFixed(2) + " €";
         }
 
@@ -1793,7 +1795,8 @@
                     buyPrice: dbItem ? dbItem.preis : 0, 
                     shipping: (i === 0 ? ship : 0),
                     fees: (i === 0 ? fees : 0),
-                    total: (item.priceTotal || 0) + (i === 0 ? ship : 0), 
+                    // ÄNDERUNG: 'total' ist jetzt der reine Preis aus dem Warenkorb ohne extra Versand-Addition.
+                    total: (item.priceTotal || 0), 
                     invoiceImg: useImg,
                     isStorno: false,
                     address: addr,
