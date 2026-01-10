@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <title>LagerManager V46</title>
+    <title>LagerManager V47</title>
     
     <style>
         /* --- GRUNDLEGENDE VARIABLEN & THEME --- */
@@ -752,7 +752,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager V46</h1>
+            <h1>LagerManager V47</h1>
             <div class="status-container">
                 <div id="statusIndicator" class="status-dot" title="Daten-Status"></div>
                 <button class="header-btn" onclick="openSettings()">Optionen</button>
@@ -929,9 +929,17 @@
                         </div>
                     </div>
                     
-                    <label style="margin-top:10px;">Gesamt (Kundenpreis)</label>
-                    <input type="text" id="sellTotal" disabled style="color:var(--success); font-weight:bold; background:#000; border-color:var(--success); font-size:1.1rem;">
-                    
+                    <div class="row-2" style="margin-top:12px;">
+                        <div>
+                            <label>Gesamt (Kunde)</label>
+                            <input type="text" id="sellTotal" disabled style="color:var(--text); font-weight:bold; background:#000; border-color:#444;">
+                        </div>
+                        <div>
+                            <label>Gewinn (Prognose)</label>
+                            <input type="text" id="sellProfitPreview" disabled style="color:var(--success); font-weight:bold; background:#000; border-color:var(--success);">
+                        </div>
+                    </div>
+
                     <label style="margin-top:10px;">Beleg (Foto)</label>
                     <input type="file" id="sellFileInput" onchange="handleImageCompressed(this, 'sellBild', 'sellImgPreview')">
                     <input type="hidden" id="sellBild">
@@ -1625,7 +1633,8 @@
                 artnr: it.artnr, 
                 stock: it.menge, 
                 qty: 1, 
-                priceTotal: it.preis, 
+                priceTotal: it.preis, // Verkaufspreis
+                buyPrice: it.preis,   // Einkaufspreis (EK) merken für Gewinn-Rechnung
                 origImg: it.bild 
             }];
             
@@ -1690,6 +1699,7 @@
                             stock:i.menge, 
                             qty:1, 
                             priceTotal:i.preis, 
+                            buyPrice: i.preis, // EK merken
                             origImg:i.bild 
                         });
                         renderBasket();
@@ -1720,7 +1730,7 @@
                             <input type="number" value="${item.qty}" min="1" max="${item.stock}" onchange="updateBasket(${idx}, 'qty', this.value)">
                         </div>
                         <div>
-                            <label>Preis Total</label>
+                            <label>Preis Total (Verkauf)</label>
                             <input type="number" value="${item.priceTotal}" step="0.01" onchange="updateBasket(${idx}, 'price', this.value)">
                         </div>
                     </div>`;
@@ -1750,11 +1760,33 @@
         }
 
         function calcBasketTotal() {
-            let sum = basket.reduce((acc, item) => acc + (item.priceTotal || 0), 0);
-            // ÄNDERUNG: Versand wird NICHT mehr zum Kundenpreis addiert.
-            // Der im Warenkorb eingetragene Preis IST der Endpreis.
-            // sum += parseFloat(document.getElementById('sellShipping').value || 0); 
-            document.getElementById('sellTotal').value = sum.toFixed(2) + " €";
+            // Einnahmen (Was der Kunde zahlt)
+            let revenue = basket.reduce((acc, item) => acc + (item.priceTotal || 0), 0);
+            
+            // Kosten (Versand & Gebühren)
+            let ship = parseFloat(document.getElementById('sellShipping').value || 0);
+            let fees = parseFloat(document.getElementById('sellFees').value || 0);
+
+            // Einkaufskosten (EK * Menge)
+            let cogs = basket.reduce((acc, item) => acc + ((item.buyPrice || 0) * item.qty), 0);
+            
+            // Gewinn = Einnahmen - Versand - Gebühren - Einkaufskosten
+            let profit = revenue - ship - fees - cogs;
+            
+            // Anzeige Update
+            document.getElementById('sellTotal').value = revenue.toFixed(2) + " €";
+            
+            const profEl = document.getElementById('sellProfitPreview');
+            profEl.value = profit.toFixed(2) + " €";
+            
+            // Farbe anpassen
+            if(profit >= 0) {
+                profEl.style.color = 'var(--success)';
+                profEl.style.borderColor = 'var(--success)';
+            } else {
+                profEl.style.color = 'var(--danger)';
+                profEl.style.borderColor = 'var(--danger)';
+            }
         }
 
         async function performSell() {
@@ -1795,7 +1827,7 @@
                     buyPrice: dbItem ? dbItem.preis : 0, 
                     shipping: (i === 0 ? ship : 0),
                     fees: (i === 0 ? fees : 0),
-                    // ÄNDERUNG: 'total' ist jetzt der reine Preis aus dem Warenkorb ohne extra Versand-Addition.
+                    // Total ist der reine Verkaufspreis
                     total: (item.priceTotal || 0), 
                     invoiceImg: useImg,
                     isStorno: false,
