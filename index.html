@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <title>LagerManager V48</title>
+    <title>LagerManager V47</title>
     
     <style>
         /* --- GRUNDLEGENDE VARIABLEN & THEME --- */
@@ -752,7 +752,7 @@
 
     <div class="app-header">
         <div class="header-top">
-            <h1>LagerManager V48</h1>
+            <h1>LagerManager V47</h1>
             <div class="status-container">
                 <div id="statusIndicator" class="status-dot" title="Daten-Status"></div>
                 <button class="header-btn" onclick="openSettings()">Optionen</button>
@@ -1220,11 +1220,8 @@
             });
             
             const uniqueInvoices = new Set();
-            let stornoCount = 0; // Zähler für Stornos
             salesLog.forEach(s => {
-                if(s.isStorno) {
-                    stornoCount++;
-                } else {
+                if(!s.isStorno) {
                     tRev += (s.total || 0);
                     const cost = (s.buyPrice || 0) * (s.qty || 0);
                     tProf += ((s.total || 0) - (s.shipping || 0) - (s.fees || 0) - cost);
@@ -1234,8 +1231,7 @@
             
             document.getElementById('statCount').innerText = tQty;
             document.getElementById('statValue').innerText = tVal.toFixed(2) + " €";
-            // Anzeige Anzahl Verkäufe (Stornos in Klammern)
-            document.getElementById('statSalesCount').innerText = `${uniqueInvoices.size} (${stornoCount})`;
+            document.getElementById('statSalesCount').innerText = uniqueInvoices.size;
             document.getElementById('statRevenue').innerText = tRev.toFixed(2) + " €";
             document.getElementById('statProfit').innerText = tProf.toFixed(2) + " €";
         }
@@ -1336,21 +1332,7 @@
                 return;
             }
 
-            // NEUE SORTIERLOGIK: Nach Nummer sortieren (z.B. R10-2025 > R2-2025)
-            const sortedKeys = Object.keys(groups).sort((a, b) => {
-                const getNum = (str) => {
-                    const match = str.match(/\d+/);
-                    return match ? parseInt(match[0]) : 0;
-                };
-                const numA = getNum(a);
-                const numB = getNum(b);
-                if (numA !== numB) {
-                    return numB - numA; // Absteigend (Höchste Zahl zuerst)
-                }
-                return b.localeCompare(a); // Fallback
-            });
-
-            sortedKeys.forEach(inv => {
+            Object.keys(groups).sort().reverse().forEach(inv => {
                 const g = groups[inv];
                 const hasStorno = g.items.some(x => x.isStorno);
                 const addrIcon = g.address ? ' 🏠' : '';
@@ -1652,7 +1634,7 @@
                 stock: it.menge, 
                 qty: 1, 
                 priceTotal: it.preis, // Verkaufspreis
-                buyPrice: it.preis,   // EK merken
+                buyPrice: it.preis,   // Einkaufspreis (EK) merken für Gewinn-Rechnung
                 origImg: it.bild 
             }];
             
