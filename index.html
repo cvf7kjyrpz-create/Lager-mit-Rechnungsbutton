@@ -1190,7 +1190,7 @@
             currentView = tab;
             // Tabs umschalten
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tab === 'inventory' ? 'tabInv' : 'active');
+            document.getElementById(tab === 'inventory' ? 'tabInv' : 'tabSales').classList.add('active');
             
             // Views umschalten
             document.getElementById('viewInventory').classList.toggle('active', tab === 'inventory');
@@ -1513,18 +1513,19 @@
 
             if(!confirm("Diesen Artikel stornieren?")) return;
 
-            // NEU: Abfrage ob zurück ins Lager
             const addToInventory = confirm("Soll der stornierte Artikel wieder in den Lagerbestand gebucht werden?");
 
             if(addToInventory) {
                 let restoreQty = parseInt(s.qty) || 1;
                 
-                // Suche zuerst nach Artikelnummer, dann ersatzweise nach dem Namen (wichtig für ältere Verkäufe)
-                let it = inventory.find(x => x.artnr && x.artnr === s.artnr);
-                if (!it) it = inventory.find(x => x.name === s.name);
+                // Zuverlässigere Suchlogik
+                let it = inventory.find(x => x.artnr === s.artnr);
+                if (!it) {
+                    it = inventory.find(x => x.name === s.name);
+                }
 
                 if(it) { 
-                    it.menge += restoreQty; 
+                    it.menge = parseInt(it.menge) + restoreQty; 
                     await dbOp('inventory', 'put', it); 
                 } else { 
                     // Artikel nicht mehr da -> Neu anlegen
@@ -1561,12 +1562,14 @@
                     
                     let restoreQty = parseInt(s.qty) || 1;
                     
-                    // Suche zuerst nach Artikelnummer, dann ersatzweise nach dem Namen
-                    let it = inventory.find(x => x.artnr && x.artnr === s.artnr);
-                    if (!it) it = inventory.find(x => x.name === s.name);
+                    // Zuverlässigere Suchlogik
+                    let it = inventory.find(x => x.artnr === s.artnr);
+                    if (!it) {
+                        it = inventory.find(x => x.name === s.name);
+                    }
                     
                     if(it) { 
-                        it.menge += restoreQty; 
+                        it.menge = parseInt(it.menge) + restoreQty; 
                         await dbOp('inventory', 'put', it); 
                     } else { 
                         await dbOp('inventory', 'add', { 
@@ -1947,9 +1950,12 @@
             // Bestandsänderung bei Mengenänderung
             if(newQty !== s.qty) {
                 const diff = newQty - s.qty;
-                const it = inventory.find(x => x.artnr === s.artnr);
+                let it = inventory.find(x => x.artnr === s.artnr);
+                if (!it) {
+                    it = inventory.find(x => x.name === s.name);
+                }
                 if(it) { 
-                    it.menge -= diff; 
+                    it.menge = parseInt(it.menge) - diff; 
                     await dbOp('inventory', 'put', it); 
                 }
             }
