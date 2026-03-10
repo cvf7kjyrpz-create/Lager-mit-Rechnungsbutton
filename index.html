@@ -745,11 +745,9 @@
         }
         input:checked + .slider { background-color: var(--success); border-color: var(--success); }
         input:checked + .slider:before { transform: translateX(18px); }
-
     </style>
 </head>
 <body>
-
     <div class="app-header">
         <div class="header-top">
             <h1>LagerManager V48</h1>
@@ -785,7 +783,6 @@
                     <span id="statProfit" class="stat-val text-green">0 €</span>
                 </div>
             </div>
-            
             <div class="search-wrapper" style="margin-top:5px;">
                 <input type="text" id="searchInput" class="search-input" placeholder="Suchen..." onkeyup="renderCurrentView()">
                 <button id="clearSearchBtn" class="search-clear" onclick="clearSearch()">✕</button>
@@ -800,7 +797,6 @@
     <div id="viewSales"></div>
 
     <button id="fabAdd" class="fab" onclick="openEditModal()">+</button>
-
 
     <div id="modalEdit" class="modal-overlay">
         <div class="modal-box">
@@ -861,10 +857,10 @@
                     </div>
                     
                     <div>
-                         <label>Bild</label>
-                         <input type="file" id="inpFile" accept="image/*" onchange="handleImageCompressed(this, 'inpBild', 'imgPreview')">
-                         <input type="hidden" id="inpBild">
-                         <img id="imgPreview" style="width:100%; margin-top:8px; border:1px solid #333; display:none; border-radius:4px;">
+                        <label>Bild</label>
+                        <input type="file" id="inpFile" accept="image/*" onchange="handleImageCompressed(this, 'inpBild', 'imgPreview')">
+                        <input type="hidden" id="inpBild">
+                        <img id="imgPreview" style="width:100%; margin-top:8px; border:1px solid #333; display:none; border-radius:4px;">
                     </div>
                 </div>
             </div>
@@ -980,10 +976,20 @@
                         <span class="action-text">Backup laden (.json)</span>
                         <input type="file" accept=".json" onchange="importBackup(this)" style="display:none;">
                     </label>
+
+                    <div class="action-btn" onclick="exportInventoryBackup()">
+                        <span class="action-icon">✨</span>
+                        <span class="action-text">Neustart-Backup (Nur Lager)</span>
+                    </div>
                     
                     <div class="action-btn" onclick="exportCSV()">
                         <span class="action-icon">📊</span>
-                        <span class="action-text">CSV-Export (für Excel/Steuer)</span>
+                        <span class="action-text">CSV-Export (Umsätze Steuer)</span>
+                    </div>
+
+                    <div class="action-btn" onclick="exportInventoryCSV()">
+                        <span class="action-icon">📋</span>
+                        <span class="action-text">CSV-Export (Lagerbestand)</span>
                     </div>
                     
                     <div class="action-btn" onclick="printInventory()">
@@ -1247,9 +1253,19 @@
             const list = document.getElementById('itemList');
             list.innerHTML = '';
             
-            const filtered = [...inventory].reverse().filter(i => 
+            const filtered = [...inventory].filter(i => 
                 i.name.toLowerCase().includes(term) || (i.artnr && i.artnr.toLowerCase().includes(term))
             );
+
+            // NEUE SORTIERUNG: Ausverkaufte nach unten, Rest chronologisch (neueste zuerst)
+            filtered.sort((a, b) => {
+                if (a.menge <= 0 && b.menge > 0) return 1;
+                if (a.menge > 0 && b.menge <= 0) return -1;
+                
+                const dateA = new Date(a.datum || 0).getTime();
+                const dateB = new Date(b.datum || 0).getTime();
+                return dateB - dateA; 
+            });
 
             filtered.forEach(i => {
                 const div = document.createElement('div');
@@ -1497,20 +1513,25 @@
 
             if(!confirm("Diesen Artikel stornieren?")) return;
 
-            let it = inventory.find(x => x.artnr === s.artnr);
-            if(it) { 
-                it.menge += s.qty; 
-                await dbOp('inventory', 'put', it); 
-            } else { 
-                // Artikel nicht mehr da -> Neu anlegen
-                await dbOp('inventory', 'add', { 
-                    artnr: s.artnr, 
-                    name: s.name, 
-                    menge: s.qty, 
-                    preis: s.buyPrice || 0, 
-                    ort: 'Rückbuchung', 
-                    datum: new Date().toISOString().split('T')[0] 
-                }); 
+            // NEU: Abfrage ob zurück ins Lager
+            const addToInventory = confirm("Soll der stornierte Artikel wieder in den Lagerbestand gebucht werden?");
+
+            if(addToInventory) {
+                let it = inventory.find(x => x.artnr === s.artnr);
+                if(it) { 
+                    it.menge += s.qty; 
+                    await dbOp('inventory', 'put', it); 
+                } else { 
+                    // Artikel nicht mehr da -> Neu anlegen
+                    await dbOp('inventory', 'add', { 
+                        artnr: s.artnr, 
+                        name: s.name, 
+                        menge: s.qty, 
+                        preis: s.buyPrice || 0, 
+                        ort: 'Rückbuchung', 
+                        datum: new Date().toISOString().split('T')[0] 
+                    }); 
+                }
             }
 
             s.isStorno = true;
@@ -1565,9 +1586,36 @@
             document.getElementById('inpFile').value = "";
             
             if (!id) {
-                // NEUER ARTIKEL
+                // NEUER ARTIKEL - NEUE ARTIKELNUMMER LOGIK
+                const currentYear = new Date().getFullYear();
+                const itemsThisYear = inventory.filter(item => item.artnr && item.artnr.endsWith(currentYear.toString()));
+                let nextNumber = 1;
+
+                if (currentYear === 2026) {
+                    let maxNr = 70; // Start bei 71 in 2026
+                    itemsThisYear.forEach(item => {
+                        const parts = item.artnr.split('-');
+                        if(parts.length >= 2) {
+                            const nr = parseInt(parts[0], 10);
+                            if(!isNaN(nr) && nr > maxNr) maxNr = nr;
+                        }
+                    });
+                    nextNumber = maxNr + 1;
+                } else {
+                    let maxNr = 0; // Start bei 001 in Folgejahren
+                    itemsThisYear.forEach(item => {
+                        const parts = item.artnr.split('-');
+                        if(parts.length >= 2) {
+                            const nr = parseInt(parts[0], 10);
+                            if(!isNaN(nr) && nr > maxNr) maxNr = nr;
+                        }
+                    });
+                    nextNumber = maxNr + 1;
+                }
+                const formattedNumber = nextNumber.toString().padStart(3, '0');
+
                 document.getElementById('editId').value = '';
-                document.getElementById('inpArtnr').value = (inventory.length + 1) + "-" + new Date().getFullYear(); 
+                document.getElementById('inpArtnr').value = `${formattedNumber}-${currentYear}`; 
                 document.getElementById('inpName').value = '';
                 document.getElementById('inpMenge').value = 1;
                 document.getElementById('inpPreis').value = '';
@@ -1935,11 +1983,27 @@
             // CSV Header inklusive Kaufdatum_Artikel
             let c = "Status;Datum;RechnungsNr;Plattform;KaufOrt;Kaufdatum_Artikel;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
             salesLog.forEach(s => {
-                const buy = s.buyPrice || 0;
-                const sell = s.total || 0;
-                const ship = s.shipping || 0;
-                const fees = s.fees || 0;
-                const profit = sell - ship - fees - (buy * (s.qty || 1));
+                let buy = s.buyPrice || 0;
+                let sell = s.total || 0;
+                let ship = s.shipping || 0;
+                let fees = s.fees || 0;
+                let profit = sell - ship - fees - (buy * (s.qty || 1));
+                
+                let status = "";
+                
+                // NEU: Bei Storno Werte auf 0 setzen
+                if(s.isStorno) {
+                    status = "STORNO";
+                    buy = 0;
+                    sell = 0;
+                    ship = 0;
+                    fees = 0;
+                    profit = 0;
+                }
+                else if(counts[s.invoiceNr] > 1) {
+                    status = "KOMBI";
+                }
+
                 const f = (n) => n.toFixed(2).replace('.', ',');
                 
                 // Kauf Ort & Kaufdatum Ermittlung
@@ -1955,10 +2019,6 @@
                     }
                 }
 
-                let status = "";
-                if(s.isStorno) status = "STORNO";
-                else if(counts[s.invoiceNr] > 1) status = "KOMBI";
-
                 // Datumsformatierung für CSV: YYYY-MM-DD -> DD.MM.YYYY
                 const formattedDate = formatDate(s.date);
                 const formattedBuyDate = formatDate(buyDate);
@@ -1973,6 +2033,23 @@
             a.click();
         }
 
+        // NEU: Nur Lagerbestand als CSV Exportieren
+        function exportInventoryCSV() {
+            let c = "Art-Nr;Bezeichnung;Menge;EK-Preis;Groesse;Kaufdatum;Ort;Zustand;Notiz\n";
+            const activeInventory = inventory.filter(item => item.menge > 0);
+
+            activeInventory.forEach(item => {
+                const f = (n) => (n||0).toFixed(2).replace('.', ',');
+                c += `${item.artnr||''};"${(item.name||'').replace(/"/g, '""')}";${item.menge||0};${f(item.preis)};"${item.groesse||''}";${formatDate(item.datum)};"${(item.ort||'').replace(/"/g, '""')}";"${item.zustand||''}";"${(item.notiz||'').replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob([c], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `Lagerbestand_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
         async function exportBackup() {
             const data = { artikel: inventory, sales: salesLog };
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -1984,6 +2061,18 @@
             
             // Status als gesichert markieren
             setUnsaved(false); 
+        }
+
+        // NEU: Backup nur vom Lagerbestand (Für Neustart im Folgejahr)
+        async function exportInventoryBackup() {
+            const activeInventory = inventory.filter(item => item.menge > 0);
+            const data = { artikel: activeInventory, sales: [] }; // Sales bewusst leer!
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `Lager_Neustart_${new Date().getFullYear() + 1}.json`;
+            a.click();
         }
 
         async function importBackup(inp) {
