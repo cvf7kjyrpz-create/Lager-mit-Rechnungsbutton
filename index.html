@@ -1517,18 +1517,17 @@
 
             if(addToInventory) {
                 let restoreQty = parseInt(s.qty) || 1;
+                let it = null;
                 
-                // Zuverlässigere Suchlogik
-                let it = inventory.find(x => x.artnr === s.artnr);
-                if (!it) {
-                    it = inventory.find(x => x.name === s.name);
-                }
+                if (s.itemId) it = inventory.find(x => x.id === s.itemId);
+                if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
+                if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
 
                 if(it) { 
                     it.menge = parseInt(it.menge) + restoreQty; 
                     await dbOp('inventory', 'put', it); 
+                    alert(`Erfolg: ${restoreQty}x "${s.name}" wurde dem bestehenden Lagerartikel erfolgreich wieder hinzugefügt!`);
                 } else { 
-                    // Artikel nicht mehr da -> Neu anlegen
                     await dbOp('inventory', 'add', { 
                         artnr: s.artnr || '', 
                         name: s.name || 'Unbekannt', 
@@ -1537,6 +1536,7 @@
                         ort: 'Rückbuchung', 
                         datum: new Date().toISOString().split('T')[0] 
                     }); 
+                    alert(`Hinweis: Der ursprüngliche Artikel wurde im Lager nicht mehr exakt gefunden. Es wurde ein neuer Lager-Eintrag ("Rückbuchung") für ${restoreQty}x "${s.name}" erstellt.`);
                 }
             }
 
@@ -1556,21 +1556,21 @@
             const toDel = salesLog.filter(s => s.invoiceNr === inv);
             
             if(restore) {
-                // Lager wieder auffüllen
+                let restoreCount = 0;
                 for(let s of toDel) {
                     if(s.isStorno) continue;
                     
                     let restoreQty = parseInt(s.qty) || 1;
+                    let it = null;
                     
-                    // Zuverlässigere Suchlogik
-                    let it = inventory.find(x => x.artnr === s.artnr);
-                    if (!it) {
-                        it = inventory.find(x => x.name === s.name);
-                    }
+                    if (s.itemId) it = inventory.find(x => x.id === s.itemId);
+                    if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
+                    if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
                     
                     if(it) { 
                         it.menge = parseInt(it.menge) + restoreQty; 
                         await dbOp('inventory', 'put', it); 
+                        restoreCount++;
                     } else { 
                         await dbOp('inventory', 'add', { 
                             artnr: s.artnr || '', 
@@ -1580,10 +1580,14 @@
                             ort: 'Rückbuchung', 
                             datum: new Date().toISOString().split('T')[0] 
                         }); 
+                        restoreCount++;
                     }
                 }
+                if (restoreCount > 0) {
+                    alert(`Erfolg: Die gelöschten Artikel wurden wieder ins Lager gebucht!`);
+                }
             }
-            // Verkaufseinträge löschen
+            
             for(let s of toDel) await dbOp('sales', 'delete', s.id);
             
             await loadData(); 
@@ -1600,13 +1604,12 @@
             document.getElementById('inpFile').value = "";
             
             if (!id) {
-                // NEUER ARTIKEL - NEUE ARTIKELNUMMER LOGIK
                 const currentYear = new Date().getFullYear();
                 const itemsThisYear = inventory.filter(item => item.artnr && item.artnr.endsWith(currentYear.toString()));
                 let nextNumber = 1;
 
                 if (currentYear === 2026) {
-                    let maxNr = 70; // Start bei 71 in 2026
+                    let maxNr = 70; 
                     itemsThisYear.forEach(item => {
                         const parts = item.artnr.split('-');
                         if(parts.length >= 2) {
@@ -1616,7 +1619,7 @@
                     });
                     nextNumber = maxNr + 1;
                 } else {
-                    let maxNr = 0; // Start bei 001 in Folgejahren
+                    let maxNr = 0; 
                     itemsThisYear.forEach(item => {
                         const parts = item.artnr.split('-');
                         if(parts.length >= 2) {
@@ -1640,7 +1643,6 @@
                 document.getElementById('inpBild').value = '';
                 document.getElementById('imgPreview').style.display = 'none';
             } else {
-                // ARTIKEL BEARBEITEN
                 const i = inventory.find(x => x.id === id);
                 document.getElementById('editId').value = id;
                 document.getElementById('inpArtnr').value = i.artnr || "";
@@ -1713,8 +1715,8 @@
                 artnr: it.artnr, 
                 stock: it.menge, 
                 qty: 1, 
-                priceTotal: it.preis, // Verkaufspreis
-                buyPrice: it.preis,   // EK merken
+                priceTotal: it.preis, 
+                buyPrice: it.preis,
                 origImg: it.bild 
             }];
             
@@ -1779,7 +1781,7 @@
                             stock:i.menge, 
                             qty:1, 
                             priceTotal:i.preis, 
-                            buyPrice: i.preis, // EK merken
+                            buyPrice: i.preis, 
                             origImg:i.bild 
                         });
                         renderBasket();
@@ -1840,26 +1842,17 @@
         }
 
         function calcBasketTotal() {
-            // Einnahmen (Was der Kunde zahlt)
             let revenue = basket.reduce((acc, item) => acc + (item.priceTotal || 0), 0);
-            
-            // Kosten (Versand & Gebühren)
             let ship = parseFloat(document.getElementById('sellShipping').value || 0);
             let fees = parseFloat(document.getElementById('sellFees').value || 0);
-
-            // Einkaufskosten (EK * Menge)
             let cogs = basket.reduce((acc, item) => acc + ((item.buyPrice || 0) * item.qty), 0);
-            
-            // Gewinn = Einnahmen - Versand - Gebühren - Einkaufskosten
             let profit = revenue - ship - fees - cogs;
             
-            // Anzeige Update
             document.getElementById('sellTotal').value = revenue.toFixed(2) + " €";
             
             const profEl = document.getElementById('sellProfitPreview');
             profEl.value = profit.toFixed(2) + " €";
             
-            // Farbe anpassen
             if(profit >= 0) {
                 profEl.style.color = 'var(--success)';
                 profEl.style.borderColor = 'var(--success)';
@@ -1870,7 +1863,6 @@
         }
 
         async function performSell() {
-            // Prüfung
             for(let bItem of basket) {
                 const dbItem = inventory.find(x => x.id === bItem.id);
                 if(!dbItem || dbItem.menge < bItem.qty) {
@@ -1903,11 +1895,11 @@
                     date: date, 
                     name: item.name, 
                     artnr: item.artnr,
+                    itemId: item.id, 
                     qty: item.qty, 
                     buyPrice: dbItem ? dbItem.preis : 0, 
                     shipping: (i === 0 ? ship : 0),
                     fees: (i === 0 ? fees : 0),
-                    // Total ist der reine Verkaufspreis
                     total: (item.priceTotal || 0), 
                     invoiceImg: useImg,
                     isStorno: false,
@@ -1947,13 +1939,13 @@
             const newQty = parseInt(document.getElementById('editSaleQty').value) || 1;
             const newTotal = parseFloat(document.getElementById('editSalePrice').value) || 0;
             
-            // Bestandsänderung bei Mengenänderung
             if(newQty !== s.qty) {
                 const diff = newQty - s.qty;
-                let it = inventory.find(x => x.artnr === s.artnr);
-                if (!it) {
-                    it = inventory.find(x => x.name === s.name);
-                }
+                let it = null;
+                if (s.itemId) it = inventory.find(x => x.id === s.itemId);
+                if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
+                if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
+                
                 if(it) { 
                     it.menge = parseInt(it.menge) - diff; 
                     await dbOp('inventory', 'put', it); 
@@ -1993,11 +1985,9 @@
         }
 
         function exportCSV() {
-            // Zähle Vorkommen pro Rechnung (für KOMBI Status)
             const counts = {};
             salesLog.forEach(s => { counts[s.invoiceNr] = (counts[s.invoiceNr] || 0) + 1; });
 
-            // CSV Header inklusive Kaufdatum_Artikel
             let c = "Status;Datum;RechnungsNr;Plattform;KaufOrt;Kaufdatum_Artikel;ArtNr;Artikel;Menge;EK_Einzel;VK_Gesamt;Versand;Gebuehren;Gewinn\n";
             salesLog.forEach(s => {
                 let buy = s.buyPrice || 0;
@@ -2008,7 +1998,6 @@
                 
                 let status = "";
                 
-                // NEU: Bei Storno Werte auf 0 setzen
                 if(s.isStorno) {
                     status = "STORNO";
                     buy = 0;
@@ -2023,11 +2012,9 @@
 
                 const f = (n) => n.toFixed(2).replace('.', ',');
                 
-                // Kauf Ort & Kaufdatum Ermittlung
                 let loc = s.sourcingLoc || '';
                 let buyDate = '';
                 
-                // Versuche Daten aus Inventar zu holen (falls noch existent)
                 if(!loc || !buyDate) {
                     const o = inventory.find(i => i.artnr === s.artnr);
                     if(o) {
@@ -2036,7 +2023,6 @@
                     }
                 }
 
-                // Datumsformatierung für CSV: YYYY-MM-DD -> DD.MM.YYYY
                 const formattedDate = formatDate(s.date);
                 const formattedBuyDate = formatDate(buyDate);
 
@@ -2050,7 +2036,6 @@
             a.click();
         }
 
-        // NEU: Nur Lagerbestand als CSV Exportieren
         function exportInventoryCSV() {
             let c = "Art-Nr;Bezeichnung;Menge;EK-Preis;Groesse;Kaufdatum;Ort;Zustand;Notiz\n";
             const activeInventory = inventory.filter(item => item.menge > 0);
@@ -2076,14 +2061,12 @@
             a.download = `Backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             
-            // Status als gesichert markieren
             setUnsaved(false); 
         }
 
-        // NEU: Backup nur vom Lagerbestand (Für Neustart im Folgejahr)
         async function exportInventoryBackup() {
             const activeInventory = inventory.filter(item => item.menge > 0);
-            const data = { artikel: activeInventory, sales: [] }; // Sales bewusst leer!
+            const data = { artikel: activeInventory, sales: [] }; 
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); 
