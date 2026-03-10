@@ -1190,7 +1190,7 @@
             currentView = tab;
             // Tabs umschalten
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tab === 'inventory' ? 'tabInv' : 'tabSales').classList.add('active');
+            document.getElementById(tab === 'inventory' ? 'tabInv' : 'active');
             
             // Views umschalten
             document.getElementById('viewInventory').classList.toggle('active', tab === 'inventory');
@@ -1517,16 +1517,21 @@
             const addToInventory = confirm("Soll der stornierte Artikel wieder in den Lagerbestand gebucht werden?");
 
             if(addToInventory) {
-                let it = inventory.find(x => x.artnr === s.artnr);
+                let restoreQty = parseInt(s.qty) || 1;
+                
+                // Suche zuerst nach Artikelnummer, dann ersatzweise nach dem Namen (wichtig für ältere Verkäufe)
+                let it = inventory.find(x => x.artnr && x.artnr === s.artnr);
+                if (!it) it = inventory.find(x => x.name === s.name);
+
                 if(it) { 
-                    it.menge += s.qty; 
+                    it.menge += restoreQty; 
                     await dbOp('inventory', 'put', it); 
                 } else { 
                     // Artikel nicht mehr da -> Neu anlegen
                     await dbOp('inventory', 'add', { 
-                        artnr: s.artnr, 
-                        name: s.name, 
-                        menge: s.qty, 
+                        artnr: s.artnr || '', 
+                        name: s.name || 'Unbekannt', 
+                        menge: restoreQty, 
                         preis: s.buyPrice || 0, 
                         ort: 'Rückbuchung', 
                         datum: new Date().toISOString().split('T')[0] 
@@ -1553,15 +1558,21 @@
                 // Lager wieder auffüllen
                 for(let s of toDel) {
                     if(s.isStorno) continue;
-                    let it = inventory.find(x => x.artnr === s.artnr);
+                    
+                    let restoreQty = parseInt(s.qty) || 1;
+                    
+                    // Suche zuerst nach Artikelnummer, dann ersatzweise nach dem Namen
+                    let it = inventory.find(x => x.artnr && x.artnr === s.artnr);
+                    if (!it) it = inventory.find(x => x.name === s.name);
+                    
                     if(it) { 
-                        it.menge += s.qty; 
+                        it.menge += restoreQty; 
                         await dbOp('inventory', 'put', it); 
                     } else { 
                         await dbOp('inventory', 'add', { 
-                            artnr: s.artnr, 
-                            name: s.name, 
-                            menge: s.qty, 
+                            artnr: s.artnr || '', 
+                            name: s.name || 'Unbekannt', 
+                            menge: restoreQty, 
                             preis: s.buyPrice || 0, 
                             ort: 'Rückbuchung', 
                             datum: new Date().toISOString().split('T')[0] 
