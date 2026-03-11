@@ -1519,9 +1519,10 @@
                 let restoreQty = parseInt(s.qty) || 1;
                 let it = null;
                 
-                if (s.itemId) it = inventory.find(x => x.id === s.itemId);
-                if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
-                if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
+                // Sehr robuste Suchlogik
+                if (s.itemId) it = inventory.find(x => x.id == s.itemId); // '==' anstelle von '==='
+                if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
+                if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
 
                 if(it) { 
                     it.menge = parseInt(it.menge) + restoreQty; 
@@ -1563,9 +1564,10 @@
                     let restoreQty = parseInt(s.qty) || 1;
                     let it = null;
                     
-                    if (s.itemId) it = inventory.find(x => x.id === s.itemId);
-                    if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
-                    if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
+                    // Sehr robuste Suchlogik
+                    if (s.itemId) it = inventory.find(x => x.id == s.itemId);
+                    if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
+                    if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
                     
                     if(it) { 
                         it.menge = parseInt(it.menge) + restoreQty; 
@@ -1942,9 +1944,9 @@
             if(newQty !== s.qty) {
                 const diff = newQty - s.qty;
                 let it = null;
-                if (s.itemId) it = inventory.find(x => x.id === s.itemId);
-                if (!it && s.artnr) it = inventory.find(x => x.artnr && x.artnr.toString().trim() === s.artnr.toString().trim());
-                if (!it && s.name) it = inventory.find(x => x.name && x.name.toString().trim() === s.name.toString().trim());
+                if (s.itemId) it = inventory.find(x => x.id == s.itemId);
+                if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
+                if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
                 
                 if(it) { 
                     it.menge = parseInt(it.menge) - diff; 
@@ -2016,7 +2018,9 @@
                 let buyDate = '';
                 
                 if(!loc || !buyDate) {
-                    const o = inventory.find(i => i.artnr === s.artnr);
+                    let o = inventory.find(i => i.artnr && String(i.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
+                    if (!o) o = inventory.find(i => i.name && String(i.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
+                    
                     if(o) {
                         if(!loc) loc = o.ort || '';
                         buyDate = o.datum || '';
