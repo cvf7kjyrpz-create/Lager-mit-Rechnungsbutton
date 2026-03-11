@@ -1069,6 +1069,29 @@
     </div>
 
 
+    <div id="modalStornoChoice" class="modal-overlay">
+        <div class="modal-box" style="height: auto;">
+            <div class="modal-header">Artikel stornieren</div>
+            <div class="modal-body" style="display:grid; gap:10px;">
+                <input type="hidden" id="stornoTargetId">
+                
+                <button class="btn" style="width:100%; background:#222; text-align:left; padding:12px; border:1px solid #333;" onclick="executeStorno(true)">
+                    <strong>📦 Ins Lager zurück & stornieren</strong><br>
+                    <span style="font-size:0.7rem; color:#888;">Menge kommt zurück ins Lager. Verkauf wird als STORNO markiert.</span>
+                </button>
+                
+                <button class="btn" style="width:100%; background:#2a1111; text-align:left; padding:12px; border:1px solid #422;" onclick="executeStorno(false)">
+                    <strong style="color:#faa;">🚫 Nur stornieren (Kein Lager)</strong><br>
+                    <span style="font-size:0.7rem; color:#faa;">Lagerbestand bleibt wie er ist. Verkauf wird STORNO.</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="grid-column:1/-1" onclick="closeModals()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+
     <div id="modalDeleteChoice" class="modal-overlay">
         <div class="modal-box" style="height: auto;">
             <div class="modal-header">Rechnung löschen</div>
@@ -1077,7 +1100,7 @@
                 
                 <button class="btn" style="width:100%; background:#222; text-align:left; padding:12px; border:1px solid #333;" onclick="executeDelete(true)">
                     <strong>📦 Lager füllen & löschen</strong><br>
-                    <span style="font-size:0.7rem; color:#888;">Artikel kommen zurück ins Lager. Verkauf wird entfernt.</span>
+                    <span style="font-size:0.7rem; color:#888;">Artikel kommen zurück ins Lager. Verkauf wird komplett entfernt.</span>
                 </button>
                 
                 <button class="btn" style="width:100%; background:#2a1111; text-align:left; padding:12px; border:1px solid #422;" onclick="executeDelete(false)">
@@ -1164,7 +1187,6 @@
 
         function setUnsaved(status) {
             unsavedChanges = status;
-            // Status persistent speichern
             localStorage.setItem('lagerUnsaved', status);
             
             const ind = document.getElementById('statusIndicator');
@@ -1188,15 +1210,12 @@
         // ===========================================
         function switchTab(tab) {
             currentView = tab;
-            // Tabs umschalten
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tab === 'inventory' ? 'tabInv' : 'tabSales').classList.add('active');
             
-            // Views umschalten
             document.getElementById('viewInventory').classList.toggle('active', tab === 'inventory');
             document.getElementById('viewSales').classList.toggle('active', tab === 'sales');
             
-            // FAB nur im Inventory anzeigen
             document.getElementById('fabAdd').style.display = tab === 'inventory' ? 'flex' : 'none';
             renderCurrentView();
         }
@@ -1226,7 +1245,7 @@
             });
             
             const uniqueInvoices = new Set();
-            let stornoCount = 0; // Zähler für Stornos
+            let stornoCount = 0;
             salesLog.forEach(s => {
                 if(s.isStorno) {
                     stornoCount++;
@@ -1240,7 +1259,6 @@
             
             document.getElementById('statCount').innerText = tQty;
             document.getElementById('statValue').innerText = tVal.toFixed(2) + " €";
-            // Anzeige Anzahl Verkäufe (Stornos in Klammern)
             document.getElementById('statSalesCount').innerText = `${uniqueInvoices.size} (${stornoCount})`;
             document.getElementById('statRevenue').innerText = tRev.toFixed(2) + " €";
             document.getElementById('statProfit').innerText = tProf.toFixed(2) + " €";
@@ -1257,7 +1275,6 @@
                 i.name.toLowerCase().includes(term) || (i.artnr && i.artnr.toLowerCase().includes(term))
             );
 
-            // NEUE SORTIERUNG: Ausverkaufte nach unten, Rest chronologisch (neueste zuerst)
             filtered.sort((a, b) => {
                 if (a.menge <= 0 && b.menge > 0) return 1;
                 if (a.menge > 0 && b.menge <= 0) return -1;
@@ -1279,15 +1296,12 @@
                 if(i.ort) metaParts.push(i.ort);
                 let metaHTML = metaParts.map(p => `<span class="meta-part">${p}</span>`).join('<span class="meta-sep"> | </span>');
                 
-                // Größe Badge
                 let sizeBadge = i.groesse ? `<span class="size-badge">${i.groesse}</span>` : '';
 
-                // Icons
                 let icons = "";
                 if(i.notiz && i.notiz.trim()) icons += '<span class="icon-small">📝</span>';
                 if(i.bild && i.bild.trim()) icons += '<span class="icon-small">🖼️</span>';
 
-                // "Ausverkauft" Info
                 let soldInfo = '';
                 if(i.menge <= 0) {
                     const sales = salesLog.filter(s => s.artnr === i.artnr || s.name === i.name);
@@ -1328,7 +1342,6 @@
             const list = document.getElementById('viewSales');
             list.innerHTML = '';
             
-            // Gruppieren nach Rechnungsnummer
             const groups = {};
             salesLog.forEach(s => {
                 if(term && !s.name.toLowerCase().includes(term) && !s.invoiceNr.toLowerCase().includes(term)) return;
@@ -1352,7 +1365,6 @@
                 return;
             }
 
-            // NEUE SORTIERLOGIK: Nach Nummer sortieren (z.B. R10-2025 > R2-2025)
             const sortedKeys = Object.keys(groups).sort((a, b) => {
                 const getNum = (str) => {
                     const match = str.match(/\d+/);
@@ -1360,10 +1372,8 @@
                 };
                 const numA = getNum(a);
                 const numB = getNum(b);
-                if (numA !== numB) {
-                    return numB - numA; // Absteigend (Höchste Zahl zuerst)
-                }
-                return b.localeCompare(a); // Fallback
+                if (numA !== numB) return numB - numA; 
+                return b.localeCompare(a); 
             });
 
             sortedKeys.forEach(inv => {
@@ -1371,7 +1381,6 @@
                 const hasStorno = g.items.some(x => x.isStorno);
                 const addrIcon = g.address ? ' 🏠' : '';
                 
-                // Gewinn der Gruppe berechnen
                 let groupProfit = 0;
                 g.items.forEach(it => {
                     if(!it.isStorno) {
@@ -1388,7 +1397,7 @@
                     
                     const stornoBtn = isStorno 
                         ? '' 
-                        : `<button class="btn-mini-icon btn-del-icon" title="Storno" onclick="markStorno(${it.id})">↩️</button>`;
+                        : `<button class="btn-mini-icon btn-del-icon" title="Storno" onclick="openStornoChoice(${it.id})">↩️</button>`;
 
                     return `<div class="${rowClass}">
                         <span class="${nameClass}">${it.name} (${it.qty}x) ${badge}</span>
@@ -1402,9 +1411,7 @@
 
                 const stornoHeaderLabel = hasStorno ? '<span class="storno-label-main">(STORNO)</span>' : '';
                 const headerClass = hasStorno ? 'sale-header storno-bg' : 'sale-header';
-                
-                // Profit Farbe
-                const profitColor = groupProfit >= 0 ? '#4ade80' : '#f87171'; // Grün oder Rot
+                const profitColor = groupProfit >= 0 ? '#4ade80' : '#f87171'; 
 
                 const div = document.createElement('div');
                 div.className = 'sale-group';
@@ -1437,7 +1444,6 @@
         //             KOPIEREN / EXPORT
         // ===========================================
         function copyInvoiceData() {
-            // Aus dem "Neu Verkaufen" Modal
             const data = {
                 invoiceNr: document.getElementById('sellInvoiceNr').value,
                 date: document.getElementById('sellDate').value,
@@ -1457,7 +1463,6 @@
         }
 
         function copySaleGroup(invNr) {
-            // Aus der Verkaufs-Historie
             const relatedSales = salesLog.filter(s => s.invoiceNr === invNr);
             if(relatedSales.length === 0) return;
             
@@ -1505,29 +1510,54 @@
         }
 
         // ===========================================
+        //           SMART SEARCH FÜR LAGER
+        // ===========================================
+        function findInventoryItemForRestoration(s) {
+            // Findet fehlertolerant den Originalartikel im Lager
+            let candidates = inventory.filter(x => {
+                let matchId = (s.itemId && x.id == s.itemId);
+                let matchArtnr = (s.artnr && x.artnr && String(x.artnr).trim() !== '' && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
+                let matchName = (s.name && x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
+                return matchId || matchArtnr || matchName;
+            });
+            
+            if (candidates.length === 0) return null;
+            
+            let byId = candidates.find(x => x.id == s.itemId);
+            if (byId) return byId;
+
+            // Sortieren, sodass wir immer den Artikel erwischen, der evtl. noch Lagerbestand hat
+            candidates.sort((a, b) => {
+                if (a.menge > 0 && b.menge <= 0) return -1;
+                if (a.menge <= 0 && b.menge > 0) return 1;
+                return b.id - a.id; // Sonst den neuesten Eintrag
+            });
+            
+            return candidates[0];
+        }
+
+        // ===========================================
         //           STORNO & LÖSCHEN
         // ===========================================
-        async function markStorno(id) {
+        function openStornoChoice(id) {
+            document.getElementById('stornoTargetId').value = id;
+            document.getElementById('modalStornoChoice').style.display = 'flex';
+        }
+
+        async function executeStorno(restore) {
+            const id = parseInt(document.getElementById('stornoTargetId').value, 10);
             const s = salesLog.find(x => x.id === id);
-            if(!s || s.isStorno) return; 
+            
+            if(!s || s.isStorno) return;
 
-            if(!confirm("Diesen Artikel stornieren?")) return;
-
-            const addToInventory = confirm("Soll der stornierte Artikel wieder in den Lagerbestand gebucht werden?");
-
-            if(addToInventory) {
-                let restoreQty = parseInt(s.qty) || 1;
-                let it = null;
-                
-                // Sehr robuste Suchlogik
-                if (s.itemId) it = inventory.find(x => x.id == s.itemId); // '==' anstelle von '==='
-                if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
-                if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
+            if(restore) {
+                let restoreQty = parseInt(s.qty, 10) || 1;
+                let it = findInventoryItemForRestoration(s);
 
                 if(it) { 
-                    it.menge = parseInt(it.menge) + restoreQty; 
+                    it.menge = parseInt(it.menge, 10) + restoreQty; 
                     await dbOp('inventory', 'put', it); 
-                    alert(`Erfolg: ${restoreQty}x "${s.name}" wurde dem bestehenden Lagerartikel erfolgreich wieder hinzugefügt!`);
+                    alert(`Erfolg: ${restoreQty}x "${s.name}" wurde dem bestehenden Lagerartikel wieder hinzugefügt!`);
                 } else { 
                     await dbOp('inventory', 'add', { 
                         artnr: s.artnr || '', 
@@ -1537,13 +1567,15 @@
                         ort: 'Rückbuchung', 
                         datum: new Date().toISOString().split('T')[0] 
                     }); 
-                    alert(`Hinweis: Der ursprüngliche Artikel wurde im Lager nicht mehr exakt gefunden. Es wurde ein neuer Lager-Eintrag ("Rückbuchung") für ${restoreQty}x "${s.name}" erstellt.`);
+                    alert(`Hinweis: Der Artikel wurde im Lager nicht mehr exakt gefunden. Es wurde ein neuer Lager-Eintrag ("Rückbuchung") erstellt.`);
                 }
             }
 
             s.isStorno = true;
             await dbOp('sales', 'put', s);
+            
             await loadData();
+            closeModals();
             triggerBackupIfAuto(); 
         }
 
@@ -1557,22 +1589,17 @@
             const toDel = salesLog.filter(s => s.invoiceNr === inv);
             
             if(restore) {
-                let restoreCount = 0;
+                let restoredNames = [];
                 for(let s of toDel) {
-                    if(s.isStorno) continue;
+                    if(s.isStorno) continue; // Wurde bei Storno schon berücksichtigt!
                     
-                    let restoreQty = parseInt(s.qty) || 1;
-                    let it = null;
-                    
-                    // Sehr robuste Suchlogik
-                    if (s.itemId) it = inventory.find(x => x.id == s.itemId);
-                    if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
-                    if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
+                    let restoreQty = parseInt(s.qty, 10) || 1;
+                    let it = findInventoryItemForRestoration(s);
                     
                     if(it) { 
-                        it.menge = parseInt(it.menge) + restoreQty; 
+                        it.menge = parseInt(it.menge, 10) + restoreQty; 
                         await dbOp('inventory', 'put', it); 
-                        restoreCount++;
+                        restoredNames.push(`${restoreQty}x ${s.name}`);
                     } else { 
                         await dbOp('inventory', 'add', { 
                             artnr: s.artnr || '', 
@@ -1582,11 +1609,11 @@
                             ort: 'Rückbuchung', 
                             datum: new Date().toISOString().split('T')[0] 
                         }); 
-                        restoreCount++;
+                        restoredNames.push(`${restoreQty}x ${s.name} (Neu angelegt)`);
                     }
                 }
-                if (restoreCount > 0) {
-                    alert(`Erfolg: Die gelöschten Artikel wurden wieder ins Lager gebucht!`);
+                if (restoredNames.length > 0) {
+                    alert(`Erfolg: Folgende Artikel wurden ins Lager zurückgebucht:\n\n` + restoredNames.join('\n'));
                 }
             }
             
@@ -1943,13 +1970,10 @@
             
             if(newQty !== s.qty) {
                 const diff = newQty - s.qty;
-                let it = null;
-                if (s.itemId) it = inventory.find(x => x.id == s.itemId);
-                if (!it && s.artnr) it = inventory.find(x => x.artnr && String(x.artnr).trim().toLowerCase() === String(s.artnr).trim().toLowerCase());
-                if (!it && s.name) it = inventory.find(x => x.name && String(x.name).trim().toLowerCase() === String(s.name).trim().toLowerCase());
+                let it = findInventoryItemForRestoration(s);
                 
                 if(it) { 
-                    it.menge = parseInt(it.menge) - diff; 
+                    it.menge = parseInt(it.menge, 10) - diff; 
                     await dbOp('inventory', 'put', it); 
                 }
             }
