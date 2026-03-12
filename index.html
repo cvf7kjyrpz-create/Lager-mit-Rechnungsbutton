@@ -1179,6 +1179,26 @@
         async function loadData() {
             inventory = await dbOp('inventory', 'getAll');
             salesLog = await dbOp('sales', 'getAll');
+            
+            // --- AUTOMATISCHE MIGRATION START ---
+            // Zieht fehlende Kauf-Daten für alte Verkäufe automatisch aus dem noch vorhandenen Lagerbestand
+            let migrated = false;
+            for(let s of salesLog) {
+                if(!s.buyDate || !s.sourcingLoc) {
+                    let it = findInventoryItemForRestoration(s);
+                    if(it) {
+                        if(!s.buyDate && it.datum) s.buyDate = it.datum;
+                        if(!s.sourcingLoc && it.ort) s.sourcingLoc = it.ort;
+                        await dbOp('sales', 'put', s);
+                        migrated = true;
+                    }
+                }
+            }
+            if(migrated) {
+                salesLog = await dbOp('sales', 'getAll'); // Aktualisierte Liste laden
+            }
+            // --- AUTOMATISCHE MIGRATION ENDE ---
+
             renderCurrentView();
             updateStats();
             
